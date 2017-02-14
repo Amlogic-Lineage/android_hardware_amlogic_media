@@ -2,7 +2,8 @@
 ARCH ?= arm64
 TOOLS := aarch64-linux-gnu-
 CONFIGS := CONFIG_AMLOGIC_MEDIA_VDEC_H264=m \
-	CONFIG_AMLOGIC_MEDIA_VDEC_H265=m
+	CONFIG_AMLOGIC_MEDIA_VDEC_H265=m \
+	CONFIG_AMLOGIC_MEDIA_ENCODER_H264=m
 
 define copy-media-modules
 $(foreach m, $(shell find $(strip $(1)) -name "*.ko"),\
