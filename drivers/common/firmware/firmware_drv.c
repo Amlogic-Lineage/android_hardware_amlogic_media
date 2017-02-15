@@ -32,7 +32,7 @@
 #include "../../frame_provider/decoder/utils/vdec.h"
 #include "firmware.h"
 #include "../chips/chips.h"
-#include "linux/string.h"
+#include <linux/string.h>
 #include <linux/amlogic/media/utils/log.h>
 #include <linux/firmware.h>
 #include <linux/amlogic/major.h>
@@ -51,81 +51,8 @@
 
 static DEFINE_MUTEX(mutex);
 
-struct firmware_mgr_s {
-	struct list_head head;
-	spinlock_t lock;
-};
-
-struct firmware_info_s {
-	struct list_head node;
-	char path[64];
-	char firmware_name[32];
-	struct firmware_s *data;
-};
-
-struct ucode_info_s {
-	int cpu_version;
-	const char *name;
-};
-
-struct firmware_header_s {
-	int magic;
-	int checksum;
-	char version[32];
-	char author[32];
-	char date[32];
-	char commit[16];
-	int data_size;
-	unsigned int time;
-	char reserved[32];
-};
-
-struct firmware_s {
-	union {
-		struct firmware_header_s header;
-		char buf[256];
-	};
-	char data[0];
-};
-
-struct package_header_s {
-	int magic;
-	int size;
-	int checksum;
-	char reserved[128];
-};
-
-struct package_s {
-	union {
-		struct package_header_s header;
-		char buf[256];
-	};
-	char data[0];
-};
-
-struct info_header_s {
-	char name[32];
-	char format[32];
-	char cpu[32];
-	int length;
-};
-
-struct package_info_s {
-	union {
-		struct info_header_s header;
-		char buf[256];
-	};
-	char data[0];
-};
-
 static  struct ucode_info_s ucode_info[] = {
-#include "firmware_info.h"
-};
-
-struct firmware_dev_s {
-	struct cdev cdev;
-	struct device *dev;
-	dev_t dev_no;
+#include "firmware_cfg.h"
 };
 
 static const struct file_operations firmware_fops = {
@@ -136,6 +63,67 @@ struct firmware_mgr_s *g_mgr;
 struct firmware_dev_s *g_dev;
 
 static u32 debug = 0;
+
+int get_firmware_data(enum firmware_type_e type, char *buf)
+{
+	int data_len, ret = -1;
+	struct firmware_mgr_s *mgr = g_mgr;
+	struct firmware_info_s *info;
+
+	if (list_empty(&mgr->head)) {
+		pr_info("the info list is empty.\n");
+		return 0;
+	}
+
+	list_for_each_entry(info, &mgr->head, node) {
+		if (type != info->type)
+			continue;
+
+		data_len = info->data->header.data_size;
+		memcpy(buf, info->data->data, data_len);
+		ret = data_len;
+
+		break;
+	}
+
+	return ret;
+}
+EXPORT_SYMBOL(get_firmware_data);
+
+int get_data_from_name(const char *name, char *buf)
+{
+	int data_len, ret = -1;
+	struct firmware_mgr_s *mgr = g_mgr;
+	struct firmware_info_s *info;
+	char *firmware_name = __getname();
+
+	if (IS_ERR_OR_NULL(firmware_name))
+		return -ENOMEM;
+
+	strcat(firmware_name, name);
+	strcat(firmware_name, ".bin");
+
+	if (list_empty(&mgr->head)) {
+		pr_info("the info list is empty.\n");
+		return 0;
+	}
+
+	list_for_each_entry(info, &mgr->head, node) {
+		if (strcmp(firmware_name, info->name))
+			continue;
+
+		data_len = info->data->header.data_size;
+		memcpy(buf, info->data->data, data_len);
+		ret = data_len;
+
+		break;
+	}
+
+	__putname(firmware_name);
+
+	return ret;
+}
+EXPORT_SYMBOL(get_data_from_name);
 
 static int request_firmware_from_sys(const char *file_name,
 		char *buf, int size)
@@ -173,7 +161,7 @@ int request_decoder_firmware_on_sys(enum vformat_e type,
 {
 	int ret;
 
-	ret = get_firmware_data(file_name, buf);
+	ret = get_data_from_name(file_name, buf);
 	if (ret < 0)
 		pr_info("Get firmware fail.\n");
 
@@ -247,13 +235,19 @@ static void walk_firmware_info(void)
 			continue;
 
 		pr_info("path : %s.\n", info->path);
-		pr_info("name : %s.\n", info->firmware_name);
-		pr_info("version : %s.\n", info->data->header.version);
-		pr_info("checksum : 0x%x.\n", info->data->header.checksum);
-		pr_info("data size : %d.\n", info->data->header.data_size);
-		pr_info("author : %s.\n", info->data->header.author);
-		pr_info("date : %s.\n", info->data->header.date);
-		pr_info("commit : %s.\n\n", info->data->header.commit);
+		pr_info("name : %s.\n", info->name);
+		pr_info("version : %s.\n",
+			info->data->header.version);
+		pr_info("checksum : 0x%x.\n",
+			info->data->header.checksum);
+		pr_info("data size : %d.\n",
+			info->data->header.data_size);
+		pr_info("author : %s.\n",
+			info->data->header.author);
+		pr_info("date : %s.\n",
+			info->data->header.date);
+		pr_info("commit : %s.\n\n",
+			info->data->header.commit);
 	}
 }
 
@@ -273,20 +267,19 @@ static ssize_t info_show(struct class *class,
 		if (IS_ERR_OR_NULL(info->data))
 			continue;
 
-		pr_info( "%10s : %s\n", "name",
-				info->firmware_name);
+		pr_info( "%10s : %s\n", "name", info->name);
 		pr_info( "%10s : %d\n", "size",
-				info->data->header.data_size);
-		pr_info( "%10s : %s\n", "version",
-				info->data->header.version);
-		pr_info( "%10s : 0x%x\n", "checksum",
-				info->data->header.checksum);
+			info->data->header.data_size);
+		pr_info( "%10s : %s\n", "ver",
+			info->data->header.version);
+		pr_info( "%10s : 0x%x\n", "sum",
+			info->data->header.checksum);
 		pr_info( "%10s : %s\n", "commit",
-				info->data->header.commit);
+			info->data->header.commit);
 		pr_info( "%10s : %s\n", "author",
-				info->data->header.author);
+			info->data->header.author);
 		pr_info( "%10s : %s\n\n", "date",
-				info->data->header.date);
+			info->data->header.date);
 	}
 out:
 	return pbuf - buf;
@@ -297,17 +290,13 @@ static int set_firmware_info(void)
 	int ret = 0, i, len;
 	struct firmware_info_s *info;
 	int info_size = ARRAY_SIZE(ucode_info);
-	int cpu_version = get_cpu_type();
-	const char *name;
 	char *path = __getname();
+	const char *name;
 
 	if (IS_ERR_OR_NULL(path))
 		return -ENOMEM;
 
 	for (i = 0; i < info_size; i++) {
-		if (cpu_version != ucode_info[i].cpu_version)
-			continue;
-
 		name = ucode_info[i].name;
 		if (IS_ERR_OR_NULL(name))
 			break;
@@ -324,7 +313,8 @@ static int set_firmware_info(void)
 		}
 
 		strcpy(info->path, path);
-		strcpy(info->firmware_name, name);
+		strcpy(info->name, name);
+		info->type = ucode_info[i].type;
 		info->data = NULL;
 
 		add_info(info);
@@ -368,24 +358,24 @@ static int check_repeat(struct firmware_s *data, const char *name)
 	list_for_each_entry(info, &mgr->head, node) {
 		struct firmware_s *tmp;
 
-		if (strcmp(info->firmware_name, name))
+		if (strcmp(info->name, name))
 			continue;
 
 		if (IS_ERR_OR_NULL(info->data)) {
-			pr_info("the data is null.\n");
+			pr_info("the %s data is null.\n", info->name);
 			info->data = data;
 
 			return 1;
 		}
 
 		if (info->data->header.time >= data->header.time) {
-			pr_info("the data is old.\n");
+			pr_info("the %s data is old.\n", info->name);
 			kfree(data);
 
 			return 1;
 		}
 
-		pr_info("the data is new.\n");
+		pr_info("the %s data is new.\n", info->name);
 		tmp = info->data;
 		info->data = data;
 		kfree(tmp);
@@ -396,7 +386,8 @@ static int check_repeat(struct firmware_s *data, const char *name)
 	return 0;
 }
 
-static int firmware_parse_package(char *buf, int size)
+static int firmware_parse_package(struct firmware_info_s *package,
+	char *buf, int size)
 {
 	int ret = 0;
 	struct package_s *pack;
@@ -408,13 +399,16 @@ static int firmware_parse_package(char *buf, int size)
 	int info_len, len;
 	char *path = __getname();
 
-	if (IS_ERR_OR_NULL(path))
-		return -ENOMEM;
+	if (IS_ERR_OR_NULL(path)) {
+		ret = -ENOMEM;
+		goto err;
+	}
 
 	pack = vmalloc(PACK_SIZE);
 	if (IS_ERR_OR_NULL(pack)) {
 		__putname(path);
-		return -ENOMEM;
+		ret = -ENOMEM;
+		goto err;
 	}
 
 	memset(pack, 0, PACK_SIZE);
@@ -451,7 +445,8 @@ static int firmware_parse_package(char *buf, int size)
 		}
 
 		strcpy(info->path, path);
-		strcpy(info->firmware_name, pack_info->header.name);
+		strcpy(info->name, pack_info->header.name);
+		info->type = get_firmware_type(pack_info->header.format);
 
 		len = pack_info->header.length;
 		memcpy(data, pack_info->data, len);
@@ -466,7 +461,7 @@ static int firmware_parse_package(char *buf, int size)
 			goto out;
 		}
 
-		if (check_repeat(data, info->firmware_name)) {
+		if (check_repeat(data, info->name)) {
 			kfree(info);
 			continue;
 		}
@@ -477,6 +472,8 @@ static int firmware_parse_package(char *buf, int size)
 out:
 	__putname(path);
 	vfree(pack);
+err:
+	del_info(package);
 
 	return ret;
 }
@@ -484,6 +481,15 @@ out:
 static int firmware_parse_code(struct firmware_info_s *info,
 	char *buf, int size)
 {
+	const char *cpu = get_cpu_type_name();
+	struct firmware_s *data;
+
+	data = (struct firmware_s *)buf;
+	if (strcmp(cpu, data->header.cpu)) {
+		del_info(info);
+		return 0;
+	}
+
 	info->data = kzalloc(FRIMWARE_SIZE, GFP_KERNEL);
 	if (IS_ERR_OR_NULL(info->data))
 		return -ENOMEM;
@@ -513,7 +519,7 @@ static int get_firmware_from_sys(const char *path,
 
 static int set_firmware_data(void)
 {
-	int magic = 0;
+	int ret = 0, magic = 0;
 	struct firmware_mgr_s *mgr = g_mgr;
 	struct firmware_info_s *info, *temp;
 	char *buf;
@@ -534,12 +540,11 @@ static int set_firmware_data(void)
 
 		switch (magic) {
 		case PACK:
-			firmware_parse_package(buf, size);
-			del_info(info);
+			ret = firmware_parse_package(info, buf, size);
 			break;
 
 		case CODE:
-			firmware_parse_code(info, buf, size);
+			ret = firmware_parse_code(info, buf, size);
 			break;
 
 		default:
@@ -555,43 +560,8 @@ static int set_firmware_data(void)
 
 	vfree(buf);
 
-	return 0;
-}
-
-int get_firmware_data(const char *name, char *buf)
-{
-	int data_len, ret = -1;
-	struct firmware_mgr_s *mgr = g_mgr;
-	struct firmware_info_s *info;
-	char *firmware_name = __getname();
-
-	if (IS_ERR_OR_NULL(firmware_name))
-		return -ENOMEM;
-
-	strcat(firmware_name, name);
-	strcat(firmware_name, ".bin");
-
-	if (list_empty(&mgr->head)) {
-		pr_info("the info list is empty.\n");
-		return 0;
-	}
-
-	list_for_each_entry(info, &mgr->head, node) {
-		if (strcmp(firmware_name, info->firmware_name))
-			continue;
-
-		data_len = info->data->header.data_size;
-		memcpy(buf, info->data->data, data_len);
-		ret = data_len;
-
-		break;
-	}
-
-	__putname(firmware_name);
-
 	return ret;
 }
-EXPORT_SYMBOL(get_firmware_data);
 
 static int firmware_pre_load(void)
 {

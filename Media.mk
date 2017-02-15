@@ -45,6 +45,10 @@ $(error No find the dir of include.)
 endif
 
 MODS_OUT ?= $(MEDIA_DRIVERS)/../modules
+ifeq (,$(wildcard $(MODS_OUT)))
+$(shell mkdir $(MODS_OUT) -p)
+endif
+
 TOOLS := /opt/gcc-linaro-5.3-2016.02-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-
 
 modules:

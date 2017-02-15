@@ -15,9 +15,9 @@
  *
 */
 
-{MESON_CPU_MAJOR_ID_GXL, "gxl_vh265.bin"},
+{VIDEO_PACKAGE, "gxl_ucode.bin"},
 
-{MESON_CPU_MAJOR_ID_GXL, "gxl_ucode.bin"},
+{VIDEO_DEC_HEVC, "gxl_h265.bin"},
 
-{MESON_CPU_MAJOR_ID_GXL, "gxl_h264_all.bin"},
+{VIDEO_DEC_H264, "gxl_h264.bin"},
 

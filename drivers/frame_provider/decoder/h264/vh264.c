@@ -2367,38 +2367,26 @@ static s32 vh264_init(void)
 		firmwareloaded = 1;
 	} else {
 		int ret = -1, size = -1;
-		unsigned int cpu = get_cpu_type();
 		char *buf = vmalloc(0x1000 * 8);
 
-		switch (cpu) {
-		case MESON_CPU_MAJOR_ID_GXTVBB:
-		case MESON_CPU_MAJOR_ID_GXL:
-			size = get_firmware_data("gxl_h264_all", buf);
-			if (size < 0) {
-				pr_err("get firmware fail.");
-				vfree(buf);
-				return -1;
-			}
-
-			ret = amvdec_loadmc_ex(VFORMAT_H264,
-				"gxl_h264_all", buf);
-			memcpy((u8 *) mc_cpu_addr + MC_OFFSET_HEADER,
-				buf + 0x4000, MC_SWAP_SIZE);
-			memcpy((u8 *) mc_cpu_addr + MC_OFFSET_DATA,
-				buf + 0x2000, MC_SWAP_SIZE);
-			memcpy((u8 *) mc_cpu_addr + MC_OFFSET_MMCO,
-				buf + 0x6000, MC_SWAP_SIZE);
-			memcpy((u8 *) mc_cpu_addr + MC_OFFSET_LIST,
-				buf + 0x3000, MC_SWAP_SIZE);
-			memcpy((u8 *) mc_cpu_addr + MC_OFFSET_SLICE,
-				buf + 0x5000, MC_SWAP_SIZE);
-			break;
-
-		default:
-			pr_err("invalid cpu type 0x%x.\n", cpu);
+		size = get_firmware_data(VIDEO_DEC_H264, buf);
+		if (size < 0) {
+			pr_err("get firmware fail.");
 			vfree(buf);
 			return -1;
 		}
+
+		ret = amvdec_loadmc_ex(VFORMAT_H264, NULL, buf);
+		memcpy((u8 *) mc_cpu_addr + MC_OFFSET_HEADER,
+			buf + 0x4000, MC_SWAP_SIZE);
+		memcpy((u8 *) mc_cpu_addr + MC_OFFSET_DATA,
+			buf + 0x2000, MC_SWAP_SIZE);
+		memcpy((u8 *) mc_cpu_addr + MC_OFFSET_MMCO,
+			buf + 0x6000, MC_SWAP_SIZE);
+		memcpy((u8 *) mc_cpu_addr + MC_OFFSET_LIST,
+			buf + 0x3000, MC_SWAP_SIZE);
+		memcpy((u8 *) mc_cpu_addr + MC_OFFSET_SLICE,
+			buf + 0x5000, MC_SWAP_SIZE);
 
 		vfree(buf);
 
