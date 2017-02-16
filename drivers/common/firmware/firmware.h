@@ -39,6 +39,7 @@ struct firmware_info_s {
 };
 
 struct ucode_info_s {
+	int cpu;
 	enum firmware_type_e type;
 	const char *name;
 };

@@ -290,6 +290,7 @@ static int set_firmware_info(void)
 	int ret = 0, i, len;
 	struct firmware_info_s *info;
 	int info_size = ARRAY_SIZE(ucode_info);
+	int cpu = get_cpu_type();
 	char *path = __getname();
 	const char *name;
 
@@ -297,6 +298,9 @@ static int set_firmware_info(void)
 		return -ENOMEM;
 
 	for (i = 0; i < info_size; i++) {
+		if (cpu != ucode_info[i].cpu)
+			continue;
+
 		name = ucode_info[i].name;
 		if (IS_ERR_OR_NULL(name))
 			break;
@@ -345,7 +349,7 @@ static int checksum(struct firmware_s *firmware)
 	return firmware->header.checksum != (crc ^ ~0U) ? 0 : 1;
 }
 
-static int check_repeat(struct firmware_s *data, const char *name)
+static int check_repeat(struct firmware_s *data, enum firmware_type_e type)
 {
 	struct firmware_mgr_s *mgr = g_mgr;
 	struct firmware_info_s *info;
@@ -358,19 +362,12 @@ static int check_repeat(struct firmware_s *data, const char *name)
 	list_for_each_entry(info, &mgr->head, node) {
 		struct firmware_s *tmp;
 
-		if (strcmp(info->name, name))
+		if (info->type != type)
 			continue;
 
 		if (IS_ERR_OR_NULL(info->data)) {
 			pr_info("the %s data is null.\n", info->name);
 			info->data = data;
-
-			return 1;
-		}
-
-		if (info->data->header.time >= data->header.time) {
-			pr_info("the %s data is old.\n", info->name);
-			kfree(data);
 
 			return 1;
 		}
@@ -395,7 +392,6 @@ static int firmware_parse_package(struct firmware_info_s *package,
 	struct firmware_info_s *info;
 	struct firmware_s *data;
 	char *pack_data;
-	const char *cpu;
 	int info_len, len;
 	char *path = __getname();
 
@@ -421,10 +417,6 @@ static int firmware_parse_package(struct firmware_info_s *package,
 	for (;;) {
 		if (!pack_info->header.length)
 			break;
-
-		cpu = get_cpu_type_name();
-		if (strcmp(cpu, pack_info->header.cpu))
-			continue;
 
 		len = snprintf(path, PATH_MAX, "%s/%s", DIR,
 			pack_info->header.name);
@@ -461,7 +453,7 @@ static int firmware_parse_package(struct firmware_info_s *package,
 			goto out;
 		}
 
-		if (check_repeat(data, info->name)) {
+		if (check_repeat(data, info->type)) {
 			kfree(info);
 			continue;
 		}
@@ -481,14 +473,8 @@ err:
 static int firmware_parse_code(struct firmware_info_s *info,
 	char *buf, int size)
 {
-	const char *cpu = get_cpu_type_name();
-	struct firmware_s *data;
-
-	data = (struct firmware_s *)buf;
-	if (strcmp(cpu, data->header.cpu)) {
-		del_info(info);
-		return 0;
-	}
+	if (!IS_ERR_OR_NULL(info->data))
+		kfree(info->data);
 
 	info->data = kzalloc(FRIMWARE_SIZE, GFP_KERNEL);
 	if (IS_ERR_OR_NULL(info->data))

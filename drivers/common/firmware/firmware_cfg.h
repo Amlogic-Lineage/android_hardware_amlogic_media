@@ -1,5 +1,5 @@
 /*
- * drivers/amlogic/media/common/firmware/firmware_info.h
+ * drivers/amlogic/media/common/firmware/firmware_cfg.h
  *
  * Copyright (C) 2016 Amlogic, Inc. All rights reserved.
  *
@@ -15,9 +15,15 @@
  *
 */
 
-{VIDEO_PACKAGE, "gxl_ucode.bin"},
+/*all firmwares in one bin.*/
+{MESON_CPU_MAJOR_ID_GXBB, VIDEO_PACKAGE, "video_ucode.bin"},
+{MESON_CPU_MAJOR_ID_GXTVBB, VIDEO_PACKAGE, "video_ucode.bin"},
+{MESON_CPU_MAJOR_ID_GXL, VIDEO_PACKAGE, "video_ucode.bin"},
+{MESON_CPU_MAJOR_ID_GXM, VIDEO_PACKAGE, "video_ucode.bin"},
+{MESON_CPU_MAJOR_ID_TXL, VIDEO_PACKAGE, "video_ucode.bin"},
 
-{VIDEO_DEC_HEVC, "gxl_h265.bin"},
-
-{VIDEO_DEC_H264, "gxl_h264.bin"},
+/*firmware for a special format, to replace the format in the package.*/
+{MESON_CPU_MAJOR_ID_GXL, VIDEO_DEC_HEVC, "h265.bin"},
+{MESON_CPU_MAJOR_ID_GXL, VIDEO_DEC_H264, "h264.bin"},
+{MESON_CPU_MAJOR_ID_GXL, VIDEO_DEC_H264_MULTI, "h264_multi.bin"},
 
