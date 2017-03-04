@@ -524,13 +524,12 @@ s32 tsdemux_init(u32 vid, u32 aid, u32 sid, u32 pcrid, bool is_hevc,
 	}
 
 	/* hook stream buffer with PARSER */
-	/* #if MESON_CPU_TYPE >= MESON_CPU_TYPE_MESON8 */
 	if (has_hevc_vdec() && is_hevc) {
 		WRITE_MPEG_REG(PARSER_VIDEO_START_PTR, vdec->input.start);
 		WRITE_MPEG_REG(PARSER_VIDEO_END_PTR, vdec->input.start +
 			vdec->input.size - 8);
 
-		if (vdec_stream_based(vdec)) {
+		if (vdec_single(vdec)) {
 			CLEAR_MPEG_REG_MASK(PARSER_ES_CONTROL,
 					ES_VID_MAN_RD_PTR);
 			/* set vififo_vbuf_rp_sel=>hevc */
@@ -555,7 +554,7 @@ s32 tsdemux_init(u32 vid, u32 aid, u32 sid, u32 pcrid, bool is_hevc,
 		WRITE_MPEG_REG(PARSER_VIDEO_END_PTR, vdec->input.start +
 			vdec->input.size - 8);
 
-		if (vdec_stream_based(vdec)) {
+		if (vdec_single(vdec)) {
 			CLEAR_MPEG_REG_MASK(PARSER_ES_CONTROL,
 					ES_VID_MAN_RD_PTR);
 
@@ -691,6 +690,13 @@ void tsdemux_release(void)
 	WRITE_MPEG_REG(PARSER_INT_ENABLE, 0);
 	WRITE_MPEG_REG(PARSER_VIDEO_HOLE, 0);
 	WRITE_MPEG_REG(PARSER_AUDIO_HOLE, 0);
+
+#ifdef CONFIG_MULTI_DEC
+	SET_MPEG_REG_MASK(PARSER_ES_CONTROL, ES_VID_MAN_RD_PTR);
+	WRITE_MPEG_REG(PARSER_VIDEO_WP, 0);
+	WRITE_MPEG_REG(PARSER_VIDEO_RP, 0);
+#endif
+
 	/*TODO irq */
 
 	vdec_free_irq(PARSER_IRQ, (void *)tsdemux_fetch_id);
@@ -907,12 +913,10 @@ ssize_t tsdemux_write(struct file *file,
 				r = stbuf_wait_space(vbuf, wait_size);
 
 				if (r < 0) {
-					/*
-					*pr_info("write no space--- ");
-					*pr_info("no space,%d--%d,r-%d\n",
-					*stbuf_space(vbuf),
-					*stbuf_space(abuf),r);
-					*/
+					/* pr_info("write no space--- ");
+					   pr_info("no space,%d--%d,r-%d\n",
+					   stbuf_space(vbuf),
+					   stbuf_space(abuf),r); */
 					return r;
 				}
 			}
@@ -922,12 +926,10 @@ ssize_t tsdemux_write(struct file *file,
 				r = stbuf_wait_space(abuf, wait_size);
 
 				if (r < 0) {
-					/*
-					*pr_info("write no stbuf_wait_space")'
-					*pr_info{"--- no space,%d--%d,r-%d\n",
-					*stbuf_space(vbuf),
-					*stbuf_space(abuf),r);
-					*/
+					/* pr_info("write no stbuf_wait_space")'
+					   pr_info{"--- no space,%d--%d,r-%d\n",
+					   stbuf_space(vbuf),
+					   stbuf_space(abuf),r); */
 					return r;
 				}
 			}

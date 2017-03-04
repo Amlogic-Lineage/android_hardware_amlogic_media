@@ -473,7 +473,7 @@ s32 esparser_init(struct stream_buf_s *buf, struct vdec_s *vdec)
 		WRITE_MPEG_REG(PARSER_VIDEO_END_PTR, vdec->input.start
 			+ vdec->input.size - 8);
 
-		if (vdec_stream_auto(vdec)) {
+		if (vdec_single(vdec)) {
 			CLEAR_MPEG_REG_MASK(PARSER_ES_CONTROL,
 				ES_VID_MAN_RD_PTR);
 
@@ -496,20 +496,18 @@ s32 esparser_init(struct stream_buf_s *buf, struct vdec_s *vdec)
 			WRITE_MPEG_REG(PARSER_VIDEO_RP, vdec->input.start);
 		}
 		video_data_parsed = 0;
-	} else
-		/* #endif */
-		if (pts_type == PTS_TYPE_VIDEO) {
-			WRITE_MPEG_REG(PARSER_VIDEO_START_PTR,
-				vdec->input.start);
-			WRITE_MPEG_REG(PARSER_VIDEO_END_PTR,
-				vdec->input.start + vdec->input.size - 8);
-			if (vdec_stream_auto(vdec)) {
-				CLEAR_MPEG_REG_MASK(PARSER_ES_CONTROL,
-					ES_VID_MAN_RD_PTR);
-				WRITE_VREG(VLD_MEM_VIFIFO_BUF_CNTL,
-					MEM_BUFCTRL_INIT);
-				CLEAR_VREG_MASK(VLD_MEM_VIFIFO_BUF_CNTL,
-					MEM_BUFCTRL_INIT);
+	} else if (pts_type == PTS_TYPE_VIDEO) {
+		WRITE_MPEG_REG(PARSER_VIDEO_START_PTR,
+			vdec->input.start);
+		WRITE_MPEG_REG(PARSER_VIDEO_END_PTR,
+			vdec->input.start + vdec->input.size - 8);
+		if (vdec_single(vdec)) {
+			CLEAR_MPEG_REG_MASK(PARSER_ES_CONTROL,
+				ES_VID_MAN_RD_PTR);
+
+			WRITE_VREG(VLD_MEM_VIFIFO_BUF_CNTL, MEM_BUFCTRL_INIT);
+			CLEAR_VREG_MASK(VLD_MEM_VIFIFO_BUF_CNTL,
+				MEM_BUFCTRL_INIT);
 
 				if (has_hevc_vdec()) {
 					/* set vififo_vbuf_rp_sel=>vdec */
@@ -592,9 +590,9 @@ s32 esparser_init(struct stream_buf_s *buf, struct vdec_s *vdec)
 	if (!(amports_get_debug_flags() & 1) &&
 		!codec_mm_video_tvp_enabled()) {
 		int block_size = (buf->type == BUF_TYPE_AUDIO) ?
-			PAGE_SIZE << 2 : PAGE_SIZE << 4;
+			PAGE_SIZE : PAGE_SIZE << 4;
 		int buf_num = (buf->type == BUF_TYPE_AUDIO) ?
-			5 : 10;
+			20 : (2 * SZ_1M)/(PAGE_SIZE << 4);
 		if (!(buf->type == BUF_TYPE_SUBTITLE))
 			buf->write_thread = threadrw_alloc(buf_num,
 				block_size,
@@ -882,8 +880,39 @@ ssize_t esparser_write(struct file *file,
 			struct stream_buf_s *stbuf,
 			const char __user *buf, size_t count)
 {
-	if (stbuf->write_thread)
-		return threadrw_write(file, stbuf, buf, count);
+	if (stbuf->write_thread) {
+		ssize_t ret;
+		ret = threadrw_write(file, stbuf, buf, count);
+		if (ret == -EAGAIN) {
+			u32 a, b;
+			int vdelay, adelay;
+			if ((stbuf->type != BUF_TYPE_VIDEO) &&
+				(stbuf->type != BUF_TYPE_HEVC))
+				return ret;
+			if (stbuf->buf_size > (SZ_1M * 30) ||
+				(threadrw_buffer_size(stbuf) > SZ_1M * 10) ||
+				!threadrw_support_more_buffers(stbuf))
+				return ret;
+			/*only chang buffer for video.*/
+			vdelay = calculation_stream_delayed_ms(
+					PTS_TYPE_VIDEO, &a, &b);
+			adelay = calculation_stream_delayed_ms(
+					PTS_TYPE_AUDIO, &a, &b);
+			if ((vdelay > 100 && vdelay < 2000) && /*vdelay valid.*/
+				((vdelay < 500) ||/*video delay is short!*/
+				(adelay > 0 && adelay < 1000))/*audio is low.*/
+				) {
+				/*on buffer fulled.
+				if delay is less than 100ms we think errors,
+				And we add more buffer on delay < 2s.
+				*/
+				int new_size = 2 * 1024 * 1024;
+				threadrw_alloc_more_buffer_size(
+						stbuf, new_size);
+			}
+		}
+		return ret;
+	}
 	return esparser_write_ex(file, stbuf, buf, count, 0);
 }
 

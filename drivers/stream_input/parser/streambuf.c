@@ -76,13 +76,6 @@ static s32 _stbuf_alloc(struct stream_buf_s *buf)
 			flags |= CODEC_MM_FLAGS_DMA_CPU;
 		}
 
-		if (buf->type == BUF_TYPE_VIDEO
-			&& codec_mm_get_total_size() <= 68 * SZ_1M) {
-			buf->buf_size = (1024*1024*10);
-			buf->buf_page_num =
-			PAGE_ALIGN(buf->buf_size) / PAGE_SIZE;
-		}
-
 		buf->buf_start = codec_mm_alloc_for_dma(MEM_NAME,
 			buf->buf_page_num, 4+PAGE_SHIFT, flags);
 		if (!buf->buf_start) {
@@ -114,7 +107,8 @@ static s32 _stbuf_alloc(struct stream_buf_s *buf)
 				"Subtitle", (void *)buf->buf_start,
 				buf->buf_size);
 	}
-
+	if (buf->buf_size < buf->canusebuf_size)
+		buf->canusebuf_size = buf->buf_size;
 	buf->flag |= BUF_FLAG_ALLOC;
 
 	return 0;
@@ -163,7 +157,7 @@ int stbuf_change_size(struct stream_buf_s *buf, int size)
 
 int stbuf_fetch_init(void)
 {
-	if (fetchbuf != NULL)
+	if (NULL != fetchbuf)
 		return 0;
 
 	fetchbuf = (void *)__get_free_pages(GFP_KERNEL,
@@ -234,10 +228,8 @@ u32 stbuf_rp(struct stream_buf_s *buf)
 
 u32 stbuf_space(struct stream_buf_s *buf)
 {
-	/*
-	*reserved space for safe write,
-	  * the parser fifo size is 1024byts, so reserve it
-	  */
+	/* reserved space for safe write,
+	   the parser fifo size is 1024byts, so reserve it */
 	int size;
 
 	size = buf->canusebuf_size - stbuf_level(buf);

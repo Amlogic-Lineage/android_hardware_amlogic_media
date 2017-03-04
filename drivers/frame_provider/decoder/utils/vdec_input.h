@@ -106,12 +106,12 @@ extern int vdec_input_add_frame(struct vdec_input_s *input, const char *buf,
 	size_t count);
 
 /* Peek next frame data from decoder's input */
-extern struct vframe_chunk_s
-	*vdec_input_next_chunk(struct vdec_input_s *input);
+extern struct vframe_chunk_s *vdec_input_next_chunk(
+			struct vdec_input_s *input);
 
 /* Peek next frame data from decoder's input, not marked as consumed */
-extern struct vframe_chunk_s *vdec_input_next_input_chunk(struct vdec_input_s
-	*input);
+extern struct vframe_chunk_s *vdec_input_next_input_chunk(
+			struct vdec_input_s *input);
 
 /* Consume next frame data from decoder's input */
 extern void vdec_input_release_chunk(struct vdec_input_s *input,

@@ -129,8 +129,6 @@ static void vframe_block_add_chunk(struct vframe_block_list_s *block,
 
 static void vframe_block_free_storage(struct vframe_block_list_s *block)
 {
-	struct vdec_input_s *input = block->input;
-
 	if (block->addr) {
 		dma_unmap_single(
 			get_vdec_device(),
@@ -143,12 +141,6 @@ static void vframe_block_free_storage(struct vframe_block_list_s *block)
 		block->addr = 0;
 		block->start_virt = NULL;
 		block->start = 0;
-	}
-
-	if (input->swap_page) {
-		__free_page(input->swap_page);
-		input->swap_page = NULL;
-		input->swap_valid = false;
 	}
 
 	block->size = 0;
@@ -377,8 +369,10 @@ int vdec_input_add_frame(struct vdec_input_s *input, const char *buf,
 			/* add a new block into input list */
 			new_block = kzalloc(sizeof(struct vframe_block_list_s),
 					GFP_KERNEL);
-			if (new_block == NULL)
+			if (new_block == NULL) {
+				pr_err("vframe_block structure allocation failed\n");
 				return -EAGAIN;
+			}
 
 			if (vframe_block_init_alloc_storage(input,
 				new_block) != 0) {
@@ -399,9 +393,10 @@ int vdec_input_add_frame(struct vdec_input_s *input, const char *buf,
 
 	chunk = kzalloc(sizeof(struct vframe_chunk_s), GFP_KERNEL);
 
-	if (!chunk)
-		/*pr_err("vframe_chunk structure allocation failed\n");*/
+	if (!chunk) {
+		pr_err("vframe_chunk structure allocation failed\n");
 		return -ENOMEM;
+	}
 
 	chunk->magic = 0x4b554843;
 	if (vdec->pts_valid) {
@@ -536,6 +531,13 @@ void vdec_input_release(struct vdec_input_s *input)
 		struct vframe_block_list_s *block = list_entry(
 			p, struct vframe_block_list_s, list);
 		vdec_input_remove_block(input, block);
+	}
+
+	/* release swap page */
+	if (input->swap_page) {
+		__free_page(input->swap_page);
+		input->swap_page = NULL;
+		input->swap_valid = false;
 	}
 }
 EXPORT_SYMBOL(vdec_input_release);

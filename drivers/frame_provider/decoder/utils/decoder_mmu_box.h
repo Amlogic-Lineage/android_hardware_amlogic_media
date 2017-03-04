@@ -17,9 +17,14 @@
 
 #ifndef DECODER_BUFFER_BOX
 #define DECODER_BUFFER_BOX
-void *decoder_mmu_box_alloc_box(const char *name, int player_id, int max_num);
 
-int decoder_mmu_box_alloc_idx(void *handle, int idx, int num_pages,
+void *decoder_mmu_box_alloc_box(const char *name,
+	int channel_id,
+	int max_num,
+	int min_size_M);
+
+int decoder_mmu_box_alloc_idx(
+	void *handle, int idx, int num_pages,
 	unsigned int *mmu_index_adr);
 
 int decoder_mmu_box_free_idx_tail(void *handle, int idx,
@@ -29,7 +34,8 @@ int decoder_mmu_box_free_idx(void *handle, int idx);
 
 int decoder_mmu_box_free(void *handle);
 
-int decoder_mmu_box_move_keep_idx(void *box_handle, int keep_idx);
+int decoder_mmu_box_move_keep_idx(void *box_handle,
+	int keep_idx);
 int decoder_mmu_box_free_keep(int keep_id);
 int decoder_mmu_box_free_all_keep(void);
 void *decoder_mmu_box_get_mem_handle(void *box_handle, int idx);

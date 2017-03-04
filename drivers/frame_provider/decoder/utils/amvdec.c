@@ -242,6 +242,49 @@ int amvdec_wake_unlock(void)
 #define amvdec_wake_unlock()
 #endif
 
+static s32 am_vdec_loadmc_ex(struct vdec_s *vdec,
+		const char *name, s32(*load)(const u32 *))
+{
+	int err;
+
+	if (!vdec->mc_loaded) {
+		int loaded;
+		loaded = get_decoder_firmware_data(vdec->format,
+					name, (u8 *)(vdec->mc), (4096 * 4 * 4));
+		if (loaded <= 0)
+			return -1;
+
+		vdec->mc_loaded = true;
+	}
+
+	err = (*load)(vdec->mc);
+	if (err < 0) {
+		pr_err("loading firmware %s to vdec ram  failed!\n", name);
+		return err;
+	}
+	pr_debug("loading firmware %s to vdec ram  ok!\n", name);
+	return err;
+}
+
+static s32 am_vdec_loadmc_buf_ex(struct vdec_s *vdec,
+		char *buf, int size, s32(*load)(const u32 *))
+{
+	int err;
+
+	if (!vdec->mc_loaded) {
+		memcpy((u8 *)(vdec->mc), buf, size);
+		vdec->mc_loaded = true;
+	}
+
+	err = (*load)(vdec->mc);
+	if (err < 0) {
+		pr_err("loading firmware to vdec ram  failed!\n");
+		return err;
+	}
+	pr_debug("loading firmware to vdec ram  ok!\n");
+	return err;
+}
+
 static s32 am_loadmc_ex(enum vformat_e type,
 		const char *name, char *def, s32(*load)(const u32 *))
 {
@@ -331,6 +374,17 @@ s32 amvdec_loadmc_ex(enum vformat_e type, const char *name, char *def)
 	return am_loadmc_ex(type, name, def, &amvdec_loadmc);
 }
 EXPORT_SYMBOL(amvdec_loadmc_ex);
+s32 amvdec_vdec_loadmc_ex(struct vdec_s *vdec, const char *name)
+{
+	return am_vdec_loadmc_ex(vdec, name, &amvdec_loadmc);
+}
+EXPORT_SYMBOL(amvdec_vdec_loadmc_ex);
+
+s32 amvdec_vdec_loadmc_buf_ex(struct vdec_s *vdec, char *buf, int size)
+{
+	return am_vdec_loadmc_buf_ex(vdec, buf, size, &amvdec_loadmc);
+}
+EXPORT_SYMBOL(amvdec_vdec_loadmc_buf_ex);
 
 static s32 amvdec2_loadmc(const u32 *p)
 {
@@ -507,6 +561,14 @@ s32 amhevc_loadmc_ex(enum vformat_e type, const char *name, char *def)
 		return 0;
 }
 EXPORT_SYMBOL(amhevc_loadmc_ex);
+s32 amhevc_vdec_loadmc_ex(struct vdec_s *vdec, const char *name)
+{
+	if (has_hevc_vdec())
+		return am_vdec_loadmc_ex(vdec, name, &amhevc_loadmc);
+	else
+		return 0;
+}
+EXPORT_SYMBOL(amhevc_vdec_loadmc_ex);
 
 void amvdec_start(void)
 {

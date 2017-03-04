@@ -29,7 +29,6 @@
 #include <linux/amlogic/media/utils/log.h>
 
 #include <linux/amlogic/media/registers/register_ops.h>
-#define debug_print pr_info
 
 #define MHz (1000000)
 
@@ -57,7 +56,7 @@ struct clk_mux_s gclk;
 
 void vdec1_set_clk(int source, int div)
 {
-	debug_print("vdec1_set_clk %d, %d\n", source, div);
+	pr_info("vdec1_set_clk %d, %d\n", source, div);
 	WRITE_HHI_REG_BITS(HHI_VDEC_CLK_CNTL, (source << 9) | (div - 1), 0, 16);
 }
 EXPORT_SYMBOL(vdec1_set_clk);
@@ -78,7 +77,7 @@ EXPORT_SYMBOL(vdec2_set_clk);
 
 void hevc_set_clk(int source, int div)
 {
-	debug_print("hevc_set_clk %d, %d\n", source, div);
+	pr_info("hevc_set_clk %d, %d\n", source, div);
 	WRITE_HHI_REG_BITS(HHI_VDEC2_CLK_CNTL,
 		(source << 9) | (div - 1), 16, 16);
 }
@@ -155,34 +154,37 @@ EXPORT_SYMBOL(vdec_get_clk_source);
 
 static int vdec_set_clk(int dec, int rate)
 {
-	struct clk *clk;
+	struct clk *clk = NULL;
 
 	switch (dec) {
 	case VDEC_1:
 		clk = gclk.vdec_clk;
+		WRITE_VREG_BITS(DOS_GCLK_EN0, 0x3ff, 0, 10);
 		break;
 
 	case VDEC_HCODEC:
 		clk = gclk.hcodec_clk;
+		WRITE_VREG_BITS(DOS_GCLK_EN0, 0x7fff, 12, 15);
 		break;
 
 	case VDEC_2:
 		clk = gclk.vdec_clk;
+		WRITE_VREG(DOS_GCLK_EN1, 0x3ff);
 		break;
 
 	case VDEC_HEVC:
 		clk = gclk.hevc_clk;
+		WRITE_VREG(DOS_GCLK_EN3, 0xffffffff);
 		break;
 
 	case VDEC_MAX:
 		break;
 
 	default:
-		pr_info("invaild vdec type.");
+		pr_info("invaild vdec type.\n");
 	}
 
 	clk_set_rate(clk, rate);
-	WRITE_VREG_BITS(DOS_GCLK_EN0, 0x3ff, 0, 10);
 
 	return 0;
 }
@@ -418,7 +420,7 @@ static int vdec_clock_init(void)
 	}
 	return (gp_pll_user_vdec) ? 0 : -ENOMEM;
 }
-
+#if 0
 static void update_clk_with_clk_configs(int clk, int *source, int *div,
 	int *rclk)
 {
@@ -433,7 +435,7 @@ static void update_clk_with_clk_configs(int clk, int *source, int *div,
 		vdec_get_clk_source(wantclk, source, div, rclk);
 	}
 }
-
+#endif
 #define NO_GP0_PLL 0/*(get_vdec_clk_config_settings() == 1)*//*mask*/
 #define ALWAYS_GP0_PLL 0/*(get_vdec_clk_config_settings() == 2)*//*mask*/
 
@@ -488,7 +490,7 @@ static int vdec_clock_set(int clk)
 
 	if (!clk_seted) {/*if 648 not set, */
 		vdec_set_clk(VDEC_1, clk * MHz);
-		pr_info("get clock : %lu", clk_get_rate(gclk.vdec_clk));
+		pr_info("get clock : %lu\n", clk_get_rate(gclk.vdec_clk));
 	}
 
 	if (!use_gpll)
@@ -531,23 +533,12 @@ static void hcodec_clock_off(void)
 
 static int gp_pll_user_cb_hevc(struct gp_pll_user_handle_s *user, int event)
 {
-	debug_print("gp_pll_user_cb_hevc callback\n");
+	pr_info("gp_pll_user_cb_hevc callback\n");
 	if (event == GP_PLL_USER_EVENT_GRANT) {
-		struct clk *clk = clk_get(NULL, "gp0_pll");
-
-		if (!IS_ERR(clk)) {
-			if (is_gp0_div2)
-				clk_set_rate(clk, 1296000000UL);
-			else
-				clk_set_rate(clk, 648000000UL);
-			HEVC_SAFE_CLOCK();
-			HEVC_CLOCK_OFF();
-			if (is_gp0_div2)
-				HEVC_648M_DIV();
-			else
-				HEVC_648M();
-			HEVC_CLOCK_ON();
-			debug_print("gp_pll_user_cb_hevc callback2\n");
+		if (!IS_ERR(gclk.hevc_clk)) {
+			vdec_set_clk(VDEC_HEVC, 648 * MHz);
+			pr_info("get clock : %lu\n",
+				clk_get_rate(gclk.hevc_clk));
 		}
 	}
 
@@ -564,11 +555,9 @@ static int hevc_clock_init(void)
 static int hevc_clock_set(int clk)
 {
 	int use_gpll = 0;
-	int source, div, rclk;
-	int gp_pll_wait = 0;
 	int clk_seted = 0;
+	int pll_wait = 0;
 
-	debug_print("hevc_clock_set 1 to clk %d\n", clk);
 	if (clk == 1)
 		clk = 200;
 	else if (clk == 2) {
@@ -577,57 +566,47 @@ static int hevc_clock_set(int clk)
 		else
 			clk = 648;
 	} else if (clk == 0) {
-		/*
-		*used for release gp pull.
-		   *if used, release it.
-		   *if not used gp pll
-		   *do nothing.
-		 */
-		if ((clock_real_clk[VDEC_HEVC] == 667) ||
+		if (clock_real_clk[VDEC_HEVC] == 667 ||
 			(clock_real_clk[VDEC_HEVC] == 648) ||
-			(clock_real_clk[VDEC_HEVC] <= 0))
+			clock_real_clk[VDEC_HEVC] <= 0)
 			clk = 200;
 		else
 			clk = clock_real_clk[VDEC_HEVC];
 	}
-	vdec_get_clk_source(clk, &source, &div, &rclk);
-	update_clk_with_clk_configs(clk, &source, &div, &rclk);
 
-	if (rclk == clock_real_clk[VDEC_HEVC])
-		return rclk;	/*clk not changed, */
-	if (NO_GP0_PLL) {
-		use_gpll = 0;
-		clk_seted = 0;
-	} else if ((rclk > 500 && clk != 667) || ALWAYS_GP0_PLL) {
+	if ((clk > 500 && clk != 667)) {
 		if (clock_real_clk[VDEC_HEVC] == 648)
 			return 648;
-		use_gpll = 1;
+
 		gp_pll_request(gp_pll_user_hevc);
-		while (!HEVC_WITH_GP_PLL() && gp_pll_wait++ < 1000000)
+
+		while (pll_wait++ < 1000000) {
+			if (clk_get_rate(gclk.hevc_clk) == 648) {
+				clk_seted = 1;
+				break;
+			}
 			udelay(1);
-		if (HEVC_WITH_GP_PLL()) {
-			clk_seted = 1;
-			rclk = 648;
-		} else {
-			rclk = 667;
-			/*gp_pull request failed,used default 500Mhz */
-			pr_info("get gp pll failed used fix pull\n");
+		}
+
+		if (!clk_seted) {
+			use_gpll = 0;
+			clk = 667;
+			pr_info("get pll failed used fix pll\n");
 		}
 	}
-	if (!clk_seted) {	/*if 648 not set, */
-		//HEVC_SAFE_CLOCK();
-		//HEVC_CLOCK_OFF();
-		//vdec_set_clk(VDEC_HEVC, source, div);
-		//HEVC_CLOCK_ON();
+
+	if (!clk_seted) {/*if 648 not set, */
+		vdec_set_clk(VDEC_HEVC, clk * MHz);
+		pr_info("get clock : %lu\n", clk_get_rate(gclk.hevc_clk));
 	}
+
 	if (!use_gpll)
 		gp_pll_release(gp_pll_user_hevc);
-	clock_real_clk[VDEC_HEVC] = rclk;
-/*
-*	debug_print("hevc_clock_set 2 to rclk=%d, configs=%d\n",
-*		rclk, get_vdec_clk_config_settings());
-*/
-	return rclk;
+
+	clock_real_clk[VDEC_HEVC] = clk;
+	pr_info("hevc_clock_set to %d\n", clk);
+
+	return clk;
 }
 
 static void hevc_clock_on(void)

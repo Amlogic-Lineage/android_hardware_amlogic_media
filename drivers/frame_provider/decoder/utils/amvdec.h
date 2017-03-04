@@ -19,6 +19,7 @@
 #define AMVDEC_H
 #include <linux/amlogic/media/utils/amports_config.h>
 #include <linux/amlogic/media/utils/vformat.h>
+#include "vdec.h"
 
 #define UCODE_ALIGN         8
 #define UCODE_ALIGN_MASK    7UL
@@ -35,6 +36,7 @@ extern void amvdec_stop(void);
 extern void amvdec_enable(void);
 extern void amvdec_disable(void);
 s32 amvdec_loadmc_ex(enum vformat_e type, const char *name, char *def);
+s32 amvdec_vdec_loadmc_ex(struct vdec_s *vdec, const char *name);
 
 extern void amvdec2_start(void);
 extern void amvdec2_stop(void);
@@ -47,6 +49,8 @@ extern void amhevc_stop(void);
 extern void amhevc_enable(void);
 extern void amhevc_disable(void);
 s32 amhevc_loadmc_ex(enum vformat_e type, const char *name, char *def);
+s32 amhevc_vdec_loadmc_ex(struct vdec_s *vdec, const char *name);
+s32 amvdec_vdec_loadmc_buf_ex(struct vdec_s *vdec, char *buf, int size);
 
 extern void amhcodec_start(void);
 extern void amhcodec_stop(void);

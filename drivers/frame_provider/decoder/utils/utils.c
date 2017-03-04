@@ -33,6 +33,7 @@
 #include <linux/amlogic/media/utils/vdec_reg.h>
 #include "amvdec.h"
 #include "decoder_mmu_box.h"
+#include "decoder_bmmu_box.h"
 
 static int __init decoder_common_init(void)
 {
@@ -44,6 +45,7 @@ static int __init decoder_common_init(void)
 
 	/*mmu box init.*/
 	decoder_mmu_box_init();/*exit?*/
+	decoder_bmmu_box_init();
 
 	return 0;
 }

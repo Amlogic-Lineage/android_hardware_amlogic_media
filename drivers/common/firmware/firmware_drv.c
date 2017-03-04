@@ -356,26 +356,15 @@ static int check_repeat(struct firmware_s *data, enum firmware_type_e type)
 
 	if (list_empty(&mgr->head)) {
 		pr_info("the info list is empty.\n");
-		return 0;
+		return -1;
 	}
 
 	list_for_each_entry(info, &mgr->head, node) {
-		struct firmware_s *tmp;
-
 		if (info->type != type)
 			continue;
 
-		if (IS_ERR_OR_NULL(info->data)) {
-			pr_info("the %s data is null.\n", info->name);
+		if (IS_ERR_OR_NULL(info->data))
 			info->data = data;
-
-			return 1;
-		}
-
-		pr_info("the %s data is new.\n", info->name);
-		tmp = info->data;
-		info->data = data;
-		kfree(tmp);
 
 		return 1;
 	}
@@ -446,14 +435,19 @@ static int firmware_parse_package(struct firmware_info_s *package,
 		pack_data += (pack_info->header.length + info_len);
 		pack_info = (struct package_info_s *)pack_data;
 
-		if (!checksum(data)) {
+		ret = checksum(data);
+		if (!ret) {
 			pr_info("check sum fail !\n");
 			kfree(data);
 			kfree(info);
 			goto out;
 		}
 
-		if (check_repeat(data, info->type)) {
+		ret = check_repeat(data, info->type);
+		if (ret < 0)
+			goto err;
+
+		if (ret) {
 			kfree(info);
 			continue;
 		}

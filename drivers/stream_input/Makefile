@@ -7,3 +7,4 @@ stream_input-objs	+=	parser/streambuf.o
 stream_input-objs	+=	parser/esparser.o
 stream_input-objs	+=	parser/tsdemux.o
 stream_input-objs	+=	parser/psparser.o
+stream_input-objs	+=	parser/rmparser.o
