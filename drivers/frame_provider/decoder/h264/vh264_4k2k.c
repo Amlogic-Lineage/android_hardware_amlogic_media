@@ -35,6 +35,7 @@
 #include <linux/delay.h>
 
 #include <linux/amlogic/media/codec_mm/codec_mm.h>
+#include <linux/amlogic/media/video_sink/video_keeper.h>
 
 #define MEM_NAME "codec_264_4k"
 
@@ -444,7 +445,7 @@ int init_canvas(int start_addr, long dpb_size, int dpb_number, int mb_width,
 					pr_err
 					("CMA not enough free keep buf! %d\n",
 					i);
-					//try_free_keep_video(1);/*mask*/
+					try_free_keep_video(1);
 				}
 				if (!codec_mm_enough_for_size(
 					page_count * PAGE_SIZE, 1)) {

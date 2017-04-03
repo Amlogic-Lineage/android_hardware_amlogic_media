@@ -350,6 +350,14 @@ int register_vdec_clk_mgr(int cputype[], enum vdec_type_e vdec_type,
 }
 EXPORT_SYMBOL(register_vdec_clk_mgr);
 
+int unregister_vdec_clk_mgr(enum vdec_type_e vdec_type)
+{
+	kfree(get_current_vdec_chip()->clk_mgr[vdec_type]);
+
+	return 0;
+}
+EXPORT_SYMBOL(unregister_vdec_clk_mgr);
+
 static int register_vdec_clk_setting_per_cpu(int cputype,
 	struct clk_set_setting *setting, int size)
 {
@@ -386,4 +394,12 @@ int register_vdec_clk_setting(int cputype[],
 	return 0;
 }
 EXPORT_SYMBOL(register_vdec_clk_setting);
+
+int unregister_vdec_clk_setting(void)
+{
+	kfree(get_current_vdec_chip()->clk_setting_array);
+
+	return 0;
+}
+EXPORT_SYMBOL(unregister_vdec_clk_setting);
 

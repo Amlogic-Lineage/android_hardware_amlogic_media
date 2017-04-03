@@ -102,7 +102,7 @@ extern enum vdec2_usage_e get_vdec2_usage(void);
 extern void dma_contiguous_early_fixup(phys_addr_t base, unsigned long size);
 unsigned int get_vdec_clk_config_settings(void);
 void update_vdec_clk_config_settings(unsigned int config);
-/*unsigned int get_mmu_mode(void);*//*mask*/
+//unsigned int get_mmu_mode(void);//DEBUG_TMP
 
 struct vdec_s;
 enum vformat_t;

@@ -40,5 +40,6 @@ int decoder_mmu_box_free_keep(int keep_id);
 int decoder_mmu_box_free_all_keep(void);
 void *decoder_mmu_box_get_mem_handle(void *box_handle, int idx);
 int decoder_mmu_box_init(void);
+void decoder_mmu_box_exit(void);
 
 #endif

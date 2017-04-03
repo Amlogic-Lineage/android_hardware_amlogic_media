@@ -54,13 +54,13 @@
 
 #include <linux/amlogic/media/utils/amports_config.h>
 #include "../utils/amvdec.h"
-/*#include "../vp9/vvp9.h"*//*mask*/
 #include "vdec_input.h"
 
 #include "../../../common/media_clock/clk/clk.h"
 #include <linux/reset.h>
 #include <linux/amlogic/media/old_cpu_version.h>
 #include <linux/amlogic/media/codec_mm/codec_mm.h>
+#include <linux/amlogic/media/video_sink/video_keeper.h>
 
 static DEFINE_MUTEX(vdec_mutex);
 
@@ -223,7 +223,7 @@ struct device *get_codec_cma_device(void)
 
 static unsigned int get_mmu_mode(void)
 {
-	return 1;/*mask temp*/
+	return 1;//DEBUG_TMP
 }
 
 #ifdef CONFIG_MULTI_DEC
@@ -948,6 +948,26 @@ static const char *get_dev_name(bool use_legacy_vdec, int format)
 #endif
 }
 
+void vdec_free_cmabuf(void)
+{
+	mutex_lock(&vdec_mutex);
+
+	if (inited_vcodec_num > 0) {
+		mutex_unlock(&vdec_mutex);
+		return;
+	}
+
+	if (vdec_mem_alloced_from_codec && vdec_core->mem_start) {
+		codec_mm_free_for_dma(MEM_NAME, vdec_core->mem_start);
+		vdec_cma_page = NULL;
+		vdec_core->mem_start = reserved_mem_start;
+		vdec_core->mem_end = reserved_mem_end;
+		pr_info("force free vdec memory\n");
+	}
+
+	mutex_unlock(&vdec_mutex);
+}
+
 /*
 *register vdec_device
  * create output, vfm or create ionvideo output
@@ -995,7 +1015,7 @@ s32 vdec_init(struct vdec_s *vdec, int is_4k)
 	if (vdec_single(vdec) &&
 		((vdec->format == VFORMAT_H264_4K2K) ||
 		(vdec->format == VFORMAT_HEVC && is_4k))) {
-		//try_free_keep_video(0);/*mask*/
+		try_free_keep_video(0);
 	}
 
 	/*
@@ -1018,8 +1038,8 @@ s32 vdec_init(struct vdec_s *vdec, int is_4k)
 			vdec->format,
 			vdec_default_buf_size[vdec->format] * SZ_1M);
 #endif
-		//try_free_keep_video(0);/*mask*/
-		//vdec_free_cmabuf();/*mask*/
+		try_free_keep_video(0);
+		vdec_free_cmabuf();
 	}
 
 	mutex_lock(&vdec_mutex);
@@ -1133,7 +1153,7 @@ s32 vdec_init(struct vdec_s *vdec, int is_4k)
 			if (retry_num < 1) {
 				pr_err("vdec base CMA allocation failed,try again\\n");
 				retry_num++;
-				//try_free_keep_video(0);/*mask*/
+				try_free_keep_video(0);
 				continue;/*retry alloc*/
 			}
 			pr_err("vdec base CMA allocation failed.\n");
@@ -1191,7 +1211,7 @@ s32 vdec_init(struct vdec_s *vdec, int is_4k)
 
 		goto error;
 	}
-#if 0
+
 	if (p->use_vfm_path) {
 		vdec->vf_receiver_inst = -1;
 	} else if (!vdec_dual(vdec)) {
@@ -1210,8 +1230,8 @@ s32 vdec_init(struct vdec_s *vdec, int is_4k)
 		}
 		if (p->frame_base_video_path == FRAME_BASE_PATH_IONVIDEO) {
 #if 1
-		r = ionvideo_alloc_map(&vdec->vf_receiver_name,
-				&vdec->vf_receiver_inst);
+		//r = ionvideo_alloc_map(&vdec->vf_receiver_name,
+				//&vdec->vf_receiver_inst);//DEBUG_TMP
 #else
 		/*
 		 * temporarily just use decoder instance ID as iondriver ID
@@ -1292,7 +1312,6 @@ s32 vdec_init(struct vdec_s *vdec, int is_4k)
 
 	}
 
-#endif/*mask*/
 	if (!vdec_single(vdec)) {
 		vf_reg_provider(&p->vframe_provider);
 
@@ -1322,7 +1341,7 @@ void vdec_release(struct vdec_s *vdec)
 
 	if (vdec_core->vfm_vdec == vdec)
 		vdec_core->vfm_vdec = NULL;
-#if 0
+
 	if (vdec->vf_receiver_inst >= 0) {
 		if (vdec->vfm_map_id[0]) {
 			vfm_map_remove(vdec->vfm_map_id);
@@ -1334,9 +1353,9 @@ void vdec_release(struct vdec_s *vdec)
 		 * for either un-initialized vdec or a ionvideo
 		 * instance reserved for legacy path.
 		 */
-		ionvideo_release_map(vdec->vf_receiver_inst);
+		//ionvideo_release_map(vdec->vf_receiver_inst);//DEBUG_TMP
 	}
-#endif/*mask*/
+
 	platform_device_unregister(vdec->dev);
 
 	if (!vdec->use_vfm_path) {
@@ -1348,8 +1367,8 @@ void vdec_release(struct vdec_s *vdec)
 	} else if (delay_release-- <= 0 &&
 			!keep_vdec_mem &&
 			vdec_mem_alloced_from_codec &&
-			vdec_core->mem_start /*&&
-			get_blackout_policy()*//*mask*/) {
+			vdec_core->mem_start &&
+			get_blackout_policy()) {
 		codec_mm_free_for_dma(MEM_NAME, vdec_core->mem_start);
 		vdec_cma_page = NULL;
 		vdec_core->mem_start = reserved_mem_start;
@@ -1397,27 +1416,6 @@ int vdec_reset(struct vdec_s *vdec)
 	return 0;
 }
 EXPORT_SYMBOL(vdec_reset);
-
-void vdec_free_cmabuf(void)
-{
-	mutex_lock(&vdec_mutex);
-
-	if (inited_vcodec_num > 0) {
-		mutex_unlock(&vdec_mutex);
-		return;
-	}
-
-	if (vdec_mem_alloced_from_codec && vdec_core->mem_start) {
-		codec_mm_free_for_dma(MEM_NAME, vdec_core->mem_start);
-		vdec_cma_page = NULL;
-		vdec_core->mem_start = reserved_mem_start;
-		vdec_core->mem_end = reserved_mem_end;
-		pr_info("force free vdec memory\n");
-	}
-
-	mutex_unlock(&vdec_mutex);
-}
-EXPORT_SYMBOL(vdec_free_cmabuf);
 
 static struct vdec_s *active_vdec(struct vdec_core_s *core)
 {

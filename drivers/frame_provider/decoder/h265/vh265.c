@@ -1847,7 +1847,7 @@ static void init_buf_list(struct hevc_state_s *hevc)
 	}
 
 	hevc_print(hevc, 0, "allocate begin\n");
-	/*get_cma_alloc_ref();*//*mask*/
+	//get_cma_alloc_ref();//DEBUG_TMP
 	for (i = 0; i < hevc->used_buf_num; i++) {
 		if (((i + 1) * buf_size) > hevc->mc_buf->buf_size) {
 			if (use_cma)
@@ -1923,7 +1923,7 @@ static void init_buf_list(struct hevc_state_s *hevc)
 			}
 		}
 	}
-	/*put_cma_alloc_ref();*//*mask*/
+	//put_cma_alloc_ref();//DEBUG_TMP
 	hevc_print(hevc, 0, "allocate end\n");
 
 	hevc->buf_num = i;
@@ -2053,7 +2053,8 @@ static int config_pic(struct hevc_state_s *hevc, struct PIC_s *pic,
 		}
 	} else
 		i = pic->index;
-		if (i < hevc->buf_num) {
+
+	if (i < hevc->buf_num) {
 			pic->POC = INVALID_POC;
 			/*ensure get_pic_by_POC()
 			not get the buffer not decoded*/
@@ -5054,7 +5055,8 @@ static void hevc_local_uninit(struct hevc_state_s *hevc)
 			dma_free_coherent(amports_get_dma_device(),
 				FRAME_MMU_MAP_SIZE, hevc->frame_mmu_map_addr,
 					hevc->frame_mmu_map_phy_addr);
-			hevc->frame_mmu_map_addr = NULL;
+
+		hevc->frame_mmu_map_addr = NULL;
 	}
 
 

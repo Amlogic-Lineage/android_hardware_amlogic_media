@@ -47,7 +47,7 @@
 #include "../utils/vdec.h"
 #include "../utils/amvdec.h"
 
-//#include "video.h"
+#include <linux/amlogic/media/video_sink/video.h>
 
 #define MIX_STREAM_SUPPORT
 #define SUPPORT_4K2K
@@ -3694,9 +3694,9 @@ static void init_pic_list(struct VP9Decoder_s *pbi)
 	int i;
 	struct VP9_Common_s *cm = &pbi->common;
 	struct PIC_BUFFER_CONFIG_s *pic_config;
-	//struct vframe_s vf;
+	struct vframe_s vf;
 	unsigned long disp_addr = 0;
-#if 0
+
 	if (!get_video0_frame_info(&vf)) {
 		if (vf.type & VIDTYPE_SCATTER) {
 			/*sc only used header.*/
@@ -3710,7 +3710,7 @@ static void init_pic_list(struct VP9Decoder_s *pbi)
 			disp_addr = cur_canvas.addr;
 		}
 	}
-#endif/*mask*/
+
 	for (i = 0; i < FRAME_BUFFERS; i++) {
 		pic_config = &cm->buffer_pool->frame_bufs[i].buf;
 		pic_config->index = i;
@@ -4686,21 +4686,24 @@ static void vp9_local_uninit(struct VP9Decoder_s *pbi)
 				dma_free_coherent(amports_get_dma_device(),
 						LMEM_BUF_SIZE, pbi->lmem_addr,
 						pbi->lmem_phy_addr);
-		pbi->lmem_addr = NULL;
+
+			pbi->lmem_addr = NULL;
 	}
 	if (pbi->prob_buffer_addr) {
 		if (pbi->prob_buffer_phy_addr)
 			dma_free_coherent(amports_get_dma_device(),
 				PROB_BUF_SIZE, pbi->prob_buffer_addr,
 				pbi->prob_buffer_phy_addr);
-			pbi->prob_buffer_addr = NULL;
+
+		pbi->prob_buffer_addr = NULL;
 	}
 	if (pbi->count_buffer_addr) {
 		if (pbi->count_buffer_phy_addr)
 			dma_free_coherent(amports_get_dma_device(),
 				COUNT_BUF_SIZE, pbi->count_buffer_addr,
 				pbi->count_buffer_phy_addr);
-			pbi->count_buffer_addr = NULL;
+
+		pbi->count_buffer_addr = NULL;
 	}
 #ifdef VP9_10B_MMU
 	if (pbi->frame_mmu_map_addr) {
@@ -4708,7 +4711,8 @@ static void vp9_local_uninit(struct VP9Decoder_s *pbi)
 			dma_free_coherent(amports_get_dma_device(),
 				FRAME_MMU_MAP_SIZE, pbi->frame_mmu_map_addr,
 					pbi->frame_mmu_map_phy_addr);
-			pbi->frame_mmu_map_addr = NULL;
+
+		pbi->frame_mmu_map_addr = NULL;
 	}
 #endif
 
@@ -5466,7 +5470,8 @@ static irqreturn_t vvp9_isr_thread_fn(int irq, void *data)
 	for (i = 0; i < MAX_SEGMENTS; i++)
 		seg_4lf->feature_mask[i] = (vp9_param.p.seg_lf_info[i] &
 		0x8000) ? (1 << SEG_LVL_ALT_LF) : 0;
-		for (i = 0; i < MAX_SEGMENTS; i++)
+
+	for (i = 0; i < MAX_SEGMENTS; i++)
 			seg_4lf->feature_data[i][SEG_LVL_ALT_LF]
 			= (vp9_param.p.seg_lf_info[i]
 			& 0x100) ? -(vp9_param.p.seg_lf_info[i]

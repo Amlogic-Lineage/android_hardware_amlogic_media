@@ -360,6 +360,12 @@ int decoder_mmu_box_init(void)
 }
 EXPORT_SYMBOL(decoder_mmu_box_init);
 
+void decoder_mmu_box_exit(void)
+{
+	class_unregister(&decoder_mmu_box_class);
+	pr_info("dec mmu box exit.\n");
+}
+
 #if 0
 static int __init decoder_mmu_box_init(void)
 {

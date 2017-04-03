@@ -57,6 +57,9 @@ static void __exit decoder_common_exit(void)
 
 	/*amvdec exit.*/
 	amvdec_exit();
+
+	decoder_mmu_box_exit();
+	decoder_bmmu_box_exit();
 }
 
 module_init(decoder_common_init);

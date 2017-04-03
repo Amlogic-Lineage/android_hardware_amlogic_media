@@ -23,7 +23,6 @@
 #include <linux/device.h>
 #include <linux/vmalloc.h>
 #include <linux/mm.h>
-#include <linux/vmalloc.h>
 #include <linux/slab.h>
 
 #include <linux/amlogic/media/utils/vformat.h>
@@ -42,8 +41,7 @@
 #define CLASS_NAME "firmware_codec"
 #define DEV_NAME "firmware_vdec"
 #define DIR "video"
-#define FRIMWARE_SIZE (30*1024) /*30k*/
-#define PACK_SIZE (512*1024)
+#define FRIMWARE_SIZE (64*1024) /*64k*/
 #define BUFF_SIZE (512*1024)
 
 #define PACK ('P' << 24 | 'A' << 16 | 'C' << 8 | 'K')
@@ -147,7 +145,7 @@ static int request_firmware_from_sys(const char *file_name,
 
 	memcpy(buf, (char *)firmware->data, firmware->size);
 
-	pr_info("Load mcode size : %zd, Name : %s.\n",
+	pr_info("load firmware size : %zd, Name : %s.\n",
 		firmware->size, file_name);
 	ret = firmware->size;
 release:
@@ -216,7 +214,6 @@ static void del_info(struct firmware_info_s *info)
 
 	flags = firmware_mgr_lock(mgr);
 	list_del(&info->node);
-	kfree(info);
 	firmware_mgr_unlock(mgr, flags);
 }
 
@@ -372,11 +369,9 @@ static int check_repeat(struct firmware_s *data, enum firmware_type_e type)
 	return 0;
 }
 
-static int firmware_parse_package(struct firmware_info_s *package,
-	char *buf, int size)
+static int firmware_parse_package(char *buf, int size)
 {
 	int ret = 0;
-	struct package_s *pack;
 	struct package_info_s *pack_info;
 	struct firmware_info_s *info;
 	struct firmware_s *data;
@@ -384,22 +379,10 @@ static int firmware_parse_package(struct firmware_info_s *package,
 	int info_len, len;
 	char *path = __getname();
 
-	if (IS_ERR_OR_NULL(path)) {
-		ret = -ENOMEM;
-		goto err;
-	}
+	if (IS_ERR_OR_NULL(path))
+		return -ENOMEM;
 
-	pack = vmalloc(PACK_SIZE);
-	if (IS_ERR_OR_NULL(pack)) {
-		__putname(path);
-		ret = -ENOMEM;
-		goto err;
-	}
-
-	memset(pack, 0, PACK_SIZE);
-	memcpy(pack, buf, size);
-
-	pack_data = pack->data;
+	pack_data = ((struct package_s *)buf)->data;
 	pack_info = (struct package_info_s *)pack_data;
 	info_len = sizeof(struct package_info_s);
 
@@ -444,8 +427,11 @@ static int firmware_parse_package(struct firmware_info_s *package,
 		}
 
 		ret = check_repeat(data, info->type);
-		if (ret < 0)
-			goto err;
+		if (ret < 0) {
+			kfree(data);
+			kfree(info);
+			goto out;
+		}
 
 		if (ret) {
 			kfree(info);
@@ -457,9 +443,6 @@ static int firmware_parse_package(struct firmware_info_s *package,
 	}
 out:
 	__putname(path);
-	vfree(pack);
-err:
-	del_info(package);
 
 	return ret;
 }
@@ -502,7 +485,7 @@ static int set_firmware_data(void)
 	int ret = 0, magic = 0;
 	struct firmware_mgr_s *mgr = g_mgr;
 	struct firmware_info_s *info, *temp;
-	char *buf;
+	char *buf = NULL;
 	int size;
 
 	if (list_empty(&mgr->head)) {
@@ -520,7 +503,10 @@ static int set_firmware_data(void)
 
 		switch (magic) {
 		case PACK:
-			ret = firmware_parse_package(info, buf, size);
+			ret = firmware_parse_package(buf, size);
+
+			del_info(info);
+			kfree(info);
 			break;
 
 		case CODE:
@@ -643,13 +629,8 @@ static void firmware_info_clean(void)
 		kfree(info);
 	}
 	firmware_mgr_unlock(mgr, flags);
-}
 
-static void firmware_mgr_clean(void)
-{
-	struct firmware_mgr_s *mgr = g_mgr;
-
-	kfree(mgr);
+	kfree(g_mgr);
 }
 
 static void firmware_driver_exit(void)
@@ -659,8 +640,6 @@ static void firmware_driver_exit(void)
 	class_unregister(&firmware_class);
 	unregister_chrdev_region(g_dev->dev_no, 1);
 	kfree(g_dev);
-
-	pr_info("Firmware driver cleaned up.\n");
 }
 
 static int __init firmware_module_init(void)
@@ -691,8 +670,8 @@ err:
 static void __exit firmware_module_exit(void)
 {
 	firmware_info_clean();
-	firmware_mgr_clean();
 	firmware_driver_exit();
+	pr_info("Firmware driver cleaned up.\n");
 }
 
 module_param(debug, uint, 0664);

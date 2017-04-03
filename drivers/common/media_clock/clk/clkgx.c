@@ -416,7 +416,7 @@ static int vdec_clock_init(void)
 
 	if (get_cpu_type() >= MESON_CPU_MAJOR_ID_GXL) {
 		pr_info("used fix clk for vdec clk source!\n");
-		/*update_vdec_clk_config_settings(1);*//*mask*/
+		//update_vdec_clk_config_settings(1);//DEBUG_TMP
 	}
 	return (gp_pll_user_vdec) ? 0 : -ENOMEM;
 }
@@ -424,7 +424,7 @@ static int vdec_clock_init(void)
 static void update_clk_with_clk_configs(int clk, int *source, int *div,
 	int *rclk)
 {
-	unsigned int config = 0;/*get_vdec_clk_config_settings();*//*mask*/
+	unsigned int config = 0;//get_vdec_clk_config_settings();//DEBUG_TMP
 
 	if (!config)
 		return;
@@ -436,8 +436,8 @@ static void update_clk_with_clk_configs(int clk, int *source, int *div,
 	}
 }
 #endif
-#define NO_GP0_PLL 0/*(get_vdec_clk_config_settings() == 1)*//*mask*/
-#define ALWAYS_GP0_PLL 0/*(get_vdec_clk_config_settings() == 2)*//*mask*/
+#define NO_GP0_PLL 0//(get_vdec_clk_config_settings() == 1)//DEBUG_TMP
+#define ALWAYS_GP0_PLL 0//(get_vdec_clk_config_settings() == 2)//DEBUG_TMP
 
 static int vdec_clock_set(int clk)
 {
@@ -644,4 +644,6 @@ static int vdec_clock_get(enum vdec_type_e core)
 	0}
 #include "clk.h"
 ARCH_VDEC_CLK_INIT();
+ARCH_VDEC_CLK_EXIT();
+
 MODULE_LICENSE("GPL");

@@ -26,7 +26,6 @@
 #include <linux/platform_device.h>
 #include <linux/amlogic/media/utils/amstream.h>
 #include <linux/amlogic/media/frame_sync/ptsserv.h>
-/* #include <mach/am_regs.h> */
 #include <linux/uaccess.h>
 
 #include <linux/amlogic/media/utils/vdec_reg.h>
@@ -208,7 +207,7 @@ static ssize_t _rmparser_write(const char __user *buf, size_t count)
 			("write timeout,retry,halt_count=%d parse_control=%x\n",
 			 parse_halt, READ_MPEG_REG(PARSER_CONTROL));
 
-			//vreal_set_fatal_flag(1);/*mask*/
+			//vreal_set_fatal_flag(1);//DEBUG_TMP
 
 			if (parse_halt > 10) {
 				WRITE_MPEG_REG(PARSER_CONTROL,

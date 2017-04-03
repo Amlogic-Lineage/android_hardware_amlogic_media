@@ -46,6 +46,7 @@
 #include "vh264.h"
 #include "../../../stream_input/parser/streambuf.h"
 #include <linux/delay.h>
+#include <linux/amlogic/media/video_sink/video.h>
 
 /*#include <linux/amlogic/ge2d/ge2d.h>*/
 
@@ -308,7 +309,7 @@ static s32 vh264_init(void);
 #define DFS_HIGH_THEASHOLD 3
 
 static bool pts_discontinue;
-#if 0
+#if 0//DEBUG_TMP
 
 static struct ge2d_context_s *ge2d_videoh264_context;
 
@@ -392,7 +393,7 @@ static int ge2d_canvas_dup(struct canvas_s *srcy, struct canvas_s *srcu,
 
 	return 0;
 }
-#endif/*mask*/
+#endif
 
 static inline int fifo_level(void)
 {
@@ -829,8 +830,8 @@ static void vh264_set_params(struct work_struct *work)
 		addr += ((mb_total << 8) + (mb_total << 7));/*keep last frame */
 	WRITE_VREG(AV_SCRATCH_1, addr);
 	WRITE_VREG(AV_SCRATCH_3, post_canvas);	/* should be modified later */
-	/*canvas_read((READ_VCBUS_REG(VD1_IF0_CANVAS0) & 0xff), &cur_canvas);
-	disp_addr = (cur_canvas.addr + 7) >> 3;*//*mask*/
+	//canvas_read((READ_VCBUS_REG(VD1_IF0_CANVAS0) & 0xff), &cur_canvas);
+	//disp_addr = (cur_canvas.addr + 7) >> 3;//DEBUG_TMP
 	if ((addr + mb_total * mb_mv_byte * max_reference_size)
 		>= buf_end) {
 		fatal_error_flag =
@@ -2730,12 +2731,12 @@ static void stream_switching_do(struct work_struct *work)
 				((u_index << 8) & 0x0000ff00));
 			des_index = ((y_desindex & 0xff) |
 				((u_desindex << 8) & 0x0000ff00));
-#if 0
+#if 0//DEBUG_TMP
 			ge2d_canvas_dup(&csy, &csu, &cyd,
 				GE2D_FORMAT_M24_NV21,
 				src_index,
 				des_index);
-#endif/*mask*/
+#endif
 		}
 		vf->mem_handle = decoder_bmmu_box_get_mem_handle(
 			mm_blk_handle,

@@ -25,7 +25,7 @@
 #include <linux/amlogic/media/frame_sync/ptsserv.h>
 #include <linux/amlogic/media/utils/amstream.h>
 #include <linux/amlogic/media/canvas/canvas.h>
-
+#include <linux/module.h>
 #include <linux/amlogic/media/vfm/vframe.h>
 #include <linux/amlogic/media/vfm/vframe_provider.h>
 #include <linux/amlogic/media/vfm/vframe_receiver.h>

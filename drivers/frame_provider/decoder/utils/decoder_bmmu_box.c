@@ -403,6 +403,13 @@ int decoder_bmmu_box_init(void)
 	return r;
 }
 EXPORT_SYMBOL(decoder_bmmu_box_init);
+
+void decoder_bmmu_box_exit(void)
+{
+	class_unregister(&decoder_bmmu_box_class);
+	pr_info("dec bmmu box exit.\n");
+}
+
 #if 0
 static int __init decoder_bmmu_box_init(void)
 {

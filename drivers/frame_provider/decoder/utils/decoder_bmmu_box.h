@@ -56,6 +56,8 @@ int decoder_bmmu_box_alloc_idx_wait(
 	int wait_flags);
 
 int decoder_bmmu_box_init(void);
+void decoder_bmmu_box_exit(void);
+
 #endif	/*
  */
 

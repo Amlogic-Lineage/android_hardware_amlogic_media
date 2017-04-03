@@ -61,8 +61,12 @@ void vdec2_clock_hi_enable(void);
 int register_vdec_clk_mgr(int cputype[],
 	enum vdec_type_e vdec_type, struct chip_vdec_clk_s *t_mgr);
 
+int unregister_vdec_clk_mgr(enum vdec_type_e vdec_type);
+
 int register_vdec_clk_setting(int cputype[],
 	struct clk_set_setting *p_seting, int size);
+
+int unregister_vdec_clk_setting(void);
 
 #ifdef INCLUDE_FROM_ARCH_CLK_MGR
 static struct chip_vdec_clk_s vdec_clk_mgr __initdata = {
@@ -122,7 +126,29 @@ static int __init vdec_init_clk(void)
 	return 0;
 }
 
+static void __exit vdec_clk_exit(void)
+{
+		unregister_vdec_clk_mgr(VDEC_1);
+#ifdef VDEC_HAS_VDEC2
+		unregister_vdec_clk_mgr(VDEC_2);
+#endif
+#ifdef VDEC_HAS_HEVC
+		unregister_vdec_clk_mgr(VDEC_HEVC);
+#endif
+#ifdef VDEC_HAS_VDEC_HCODEC
+		unregister_vdec_clk_mgr(VDEC_HCODEC);
+#endif
+#ifdef VDEC_HAS_CLK_SETTINGS
+		unregister_vdec_clk_setting();
+#endif
+		pr_info("media clock exit.\n");
+}
+
 #define ARCH_VDEC_CLK_INIT()\
 		module_init(vdec_init_clk)
+
+#define ARCH_VDEC_CLK_EXIT()\
+		module_exit(vdec_clk_exit)
+
 #endif
 #endif
