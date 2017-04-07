@@ -5617,14 +5617,14 @@ static int vh265_event_cb(int type, void *data, void *op_arg)
 	if (type & VFRAME_EVENT_RECEIVER_RESET) {
 #if 0
 		amhevc_stop();
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_light_unreg_provider(&vh265_vf_prov);
 #endif
 		spin_lock_irqsave(&hevc->lock, flags);
 		vh265_local_init();
 		vh265_prot_init();
 		spin_unlock_irqrestore(&hevc->lock, flags);
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_reg_provider(&vh265_vf_prov);
 #endif
 		amhevc_start();

@@ -598,14 +598,14 @@ static int vmpeg_event_cb(int type, void *data, void *private_data)
 	if (type & VFRAME_EVENT_RECEIVER_RESET) {
 		unsigned long flags;
 		amvdec_stop();
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_light_unreg_provider(&vmpeg_vf_prov);
 #endif
 		spin_lock_irqsave(&lock, flags);
 		vmpeg4_local_init();
 		vmpeg4_prot_init();
 		spin_unlock_irqrestore(&lock, flags);
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_reg_provider(&vmpeg_vf_prov);
 #endif
 		amvdec_start();
@@ -655,14 +655,14 @@ static void vmpeg_put_timer_func(unsigned long arg)
 		unsigned long flags;
 		pr_info("mpeg4 fatal error happened,need reset    !!\n");
 		amvdec_stop();
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_light_unreg_provider(&vmpeg_vf_prov);
 #endif
 		spin_lock_irqsave(&lock, flags);
 		vmpeg4_local_init();
 		vmpeg4_prot_init();
 		spin_unlock_irqrestore(&lock, flags);
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_reg_provider(&vmpeg_vf_prov);
 #endif
 		amvdec_start();
@@ -979,7 +979,7 @@ static s32 vmpeg4_init(void)
 	}
 
 	stat |= STAT_ISR_REG;
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 	vf_provider_init(&vmpeg_vf_prov, PROVIDER_NAME, &vmpeg_vf_provider,
 					 NULL);
 	vf_reg_provider(&vmpeg_vf_prov);

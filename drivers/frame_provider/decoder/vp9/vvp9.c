@@ -5063,14 +5063,14 @@ static int vvp9_event_cb(int type, void *data, void *private_data)
 #if 0
 		unsigned long flags;
 		amhevc_stop();
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_light_unreg_provider(&vvp9_vf_prov);
 #endif
 		spin_lock_irqsave(&pbi->lock, flags);
 		vvp9_local_init();
 		vvp9_prot_init();
 		spin_unlock_irqrestore(&pbi->lock, flags);
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_reg_provider(&vvp9_vf_prov);
 #endif
 		amhevc_start();

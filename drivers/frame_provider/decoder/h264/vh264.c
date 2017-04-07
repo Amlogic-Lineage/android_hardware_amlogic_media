@@ -491,14 +491,14 @@ static int vh264_event_cb(int type, void *data, void *private_data)
 		unsigned long flags;
 
 		amvdec_stop();
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_light_unreg_provider(&vh264_vf_prov);
 #endif
 		spin_lock_irqsave(&lock, flags);
 		vh264_local_init();
 		vh264_prot_init();
 		spin_unlock_irqrestore(&lock, flags);
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_reg_provider(&vh264_vf_prov);
 #endif
 		amvdec_start();
@@ -549,7 +549,7 @@ static void set_frame_info(struct vframe_s *vf)
 	vf->orientation = vh264_rotation;
 	vf->flag = 0;
 
-#ifdef CONFIG_POST_PROCESS_MANAGER_3D_PROCESS
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER_3D_PROCESS
 	vf->trans_fmt = 0;
 	if ((vf->trans_fmt == TVIN_TFMT_3D_LRF) ||
 		(vf->trans_fmt == TVIN_TFMT_3D_LA)) {
@@ -578,7 +578,7 @@ static void set_frame_info(struct vframe_s *vf)
 
 }
 
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 static void vh264_ppmgr_reset(void)
 {
 	vf_notify_receiver(PROVIDER_NAME, VFRAME_EVENT_PROVIDER_RESET, NULL);
@@ -1979,7 +1979,7 @@ static void vh264_put_timer_func(unsigned long arg)
 				if (++wait_buffer_counter > 4) {
 					amvdec_stop();
 
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 					vh264_ppmgr_reset();
 #else
 					vf_light_unreg_provider(&vh264_vf_prov);
@@ -1994,7 +1994,7 @@ static void vh264_put_timer_func(unsigned long arg)
 		} else if (wait_i_pass_frames > 1000) {
 			pr_info("i passed frames > 1000\n");
 			amvdec_stop();
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 			vh264_ppmgr_reset();
 #else
 			vf_light_unreg_provider(&vh264_vf_prov);
@@ -2011,7 +2011,7 @@ static void vh264_put_timer_func(unsigned long arg)
 		if (vh264_no_disp_count++ > NO_DISP_WD_COUNT) {
 			pr_info("$$$decoder did not send frame out\n");
 			amvdec_stop();
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 			vh264_ppmgr_reset();
 #else
 			vf_light_unreg_provider(PROVIDER_NAME);
@@ -2484,7 +2484,7 @@ static s32 vh264_init(void)
 
 	stat |= STAT_ISR_REG;
 
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 	vf_provider_init(&vh264_vf_prov, PROVIDER_NAME, &vh264_vf_provider_ops,
 					 NULL);
 	vf_reg_provider(&vh264_vf_prov);
@@ -2595,7 +2595,7 @@ static void error_do_work(struct work_struct *work)
 	if (atomic_read(&vh264_active)) {
 		amvdec_stop();
 		vh264_reset  = 1;
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vh264_ppmgr_reset();
 #else
 		vf_light_unreg_provider(&vh264_vf_prov);

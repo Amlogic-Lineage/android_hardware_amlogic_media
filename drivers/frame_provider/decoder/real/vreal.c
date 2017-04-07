@@ -379,14 +379,14 @@ static int vreal_event_cb(int type, void *data, void *private_data)
 	if (type & VFRAME_EVENT_RECEIVER_RESET) {
 		unsigned long flags;
 		amvdec_stop();
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_light_unreg_provider(&vreal_vf_prov);
 #endif
 		spin_lock_irqsave(&lock, flags);
 		vreal_local_init();
 		vreal_prot_init();
 		spin_unlock_irqrestore(&lock, flags);
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_reg_provider(&vreal_vf_prov);
 #endif
 		amvdec_start();
@@ -408,9 +408,8 @@ static int vreal_vf_states(struct vframe_states *states, void *op_arg)
 
 	return 0;
 }
-
 #if 0
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 static void vreal_ppmgr_reset(void)
 {
 	vf_notify_receiver(PROVIDER_NAME, VFRAME_EVENT_PROVIDER_RESET, NULL);
@@ -448,7 +447,7 @@ static void vreal_put_timer_func(unsigned long arg)
 		if (++wait_buffer_counter > 2) {
 			amvdec_stop();
 
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 			vreal_ppmgr_reset();
 #else
 			vf_light_unreg_provider(&vreal_vf_prov);
@@ -828,7 +827,7 @@ s32 vreal_init(struct vdec_s *vdec)
 	}
 
 	stat |= STAT_ISR_REG;
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 	vf_provider_init(&vreal_vf_prov, PROVIDER_NAME, &vreal_vf_provider,
 					 NULL);
 	vf_reg_provider(&vreal_vf_prov);

@@ -557,14 +557,14 @@ static int vmpeg_event_cb(int type, void *data, void *private_data)
 	if (type & VFRAME_EVENT_RECEIVER_RESET) {
 		unsigned long flags;
 		amvdec_stop();
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_light_unreg_provider(&vmpeg_vf_prov);
 #endif
 		spin_lock_irqsave(&lock, flags);
 		vmpeg12_local_init();
 		vmpeg12_prot_init();
 		spin_unlock_irqrestore(&lock, flags);
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_reg_provider(&vmpeg_vf_prov);
 #endif
 		amvdec_start();
@@ -587,7 +587,7 @@ static int vmpeg_vf_states(struct vframe_states *states, void *op_arg)
 	return 0;
 }
 
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 static void vmpeg12_ppmgr_reset(void)
 {
 	vf_notify_receiver(PROVIDER_NAME, VFRAME_EVENT_PROVIDER_RESET, NULL);
@@ -633,7 +633,7 @@ static void vmpeg_put_timer_func(unsigned long arg)
 
 		amvdec_stop();
 
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vmpeg12_ppmgr_reset();
 #else
 		vf_light_unreg_provider(&vmpeg_vf_prov);
@@ -952,7 +952,7 @@ static s32 vmpeg12_init(void)
 	}
 
 	stat |= STAT_ISR_REG;
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 	vf_provider_init(&vmpeg_vf_prov, PROVIDER_NAME, &vmpeg_vf_provider,
 					 NULL);
 	vf_reg_provider(&vmpeg_vf_prov);

@@ -667,14 +667,14 @@ static int vvc1_event_cb(int type, void *data, void *private_data)
 	if (type & VFRAME_EVENT_RECEIVER_RESET) {
 		unsigned long flags;
 		amvdec_stop();
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_light_unreg_provider(&vvc1_vf_prov);
 #endif
 		spin_lock_irqsave(&lock, flags);
 		vvc1_local_init();
 		vvc1_prot_init();
 		spin_unlock_irqrestore(&lock, flags);
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_reg_provider(&vvc1_vf_prov);
 #endif
 		amvdec_start();
@@ -901,7 +901,7 @@ static void vvc1_local_init(void)
 	}
 }
 
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 static void vvc1_ppmgr_reset(void)
 {
 	vf_notify_receiver(PROVIDER_NAME, VFRAME_EVENT_PROVIDER_RESET, NULL);
@@ -922,7 +922,7 @@ static void vvc1_put_timer_func(unsigned long arg)
 #if 1
 	if (READ_VREG(VC1_SOS_COUNT) > 10) {
 		amvdec_stop();
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vvc1_ppmgr_reset();
 #else
 		vf_light_unreg_provider(&vvc1_vf_prov);
@@ -1002,7 +1002,7 @@ static s32 vvc1_init(void)
 	}
 
 	stat |= STAT_ISR_REG;
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 	vf_provider_init(&vvc1_vf_prov,
 		PROVIDER_NAME, &vvc1_vf_provider, NULL);
 	vf_reg_provider(&vvc1_vf_prov);

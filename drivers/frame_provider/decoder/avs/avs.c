@@ -988,7 +988,7 @@ static int vavs_vf_states(struct vframe_states *states, void *op_arg)
 	return 0;
 }
 
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 static void vavs_ppmgr_reset(void)
 {
 	vf_notify_receiver(PROVIDER_NAME, VFRAME_EVENT_PROVIDER_RESET, NULL);
@@ -1036,7 +1036,7 @@ static void vavs_put_timer_func(unsigned long arg)
 				mutex_lock(&vavs_mutex);
 				pr_info("vavs fatal error reset !\n");
 				amvdec_stop();
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 				vavs_ppmgr_reset();
 #else
 				vf_light_unreg_provider(&vavs_vf_prov);
@@ -1274,7 +1274,7 @@ static s32 vavs_init(void)
 
 	stat |= STAT_ISR_REG;
 
-#ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 	vf_provider_init(&vavs_vf_prov, PROVIDER_NAME, &vavs_vf_provider, NULL);
 	vf_reg_provider(&vavs_vf_prov);
 	vf_notify_receiver(PROVIDER_NAME, VFRAME_EVENT_PROVIDER_START, NULL);

@@ -349,14 +349,14 @@ static int vh264_4k2k_event_cb(int type, void *data, void *private_data)
 
 		if (!H264_4K2K_SINGLE_CORE)
 			amvdec2_stop();
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_light_unreg_provider(&vh264_4k2k_vf_prov);
 #endif
 		spin_lock_irqsave(&lock, flags);
 		vh264_4k2k_local_init();
 		vh264_4k2k_prot_init();
 		spin_unlock_irqrestore(&lock, flags);
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_reg_provider(&vh264_4k2k_vf_prov);
 #endif
 		amvdec_start();

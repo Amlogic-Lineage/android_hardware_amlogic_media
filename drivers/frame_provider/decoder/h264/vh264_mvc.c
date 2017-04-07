@@ -502,14 +502,14 @@ static int vh264mvc_event_cb(int type, void *data, void *private_data)
 	if (type & VFRAME_EVENT_RECEIVER_RESET) {
 		unsigned long flags;
 		amvdec_stop();
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_light_unreg_provider(&vh264mvc_vf_prov);
 #endif
 		spin_lock_irqsave(&lock, flags);
 		vh264mvc_local_init();
 		vh264mvc_prot_init();
 		spin_unlock_irqrestore(&lock, flags);
-#ifndef CONFIG_POST_PROCESS_MANAGER
+#ifndef CONFIG_AMLOGIC_POST_PROCESS_MANAGER
 		vf_reg_provider(&vh264mvc_vf_prov);
 #endif
 		amvdec_start();
