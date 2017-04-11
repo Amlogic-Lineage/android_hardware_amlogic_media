@@ -1607,10 +1607,10 @@ static int amstream_release(struct inode *inode, struct file *file)
 		if (port->type & PORT_TYPE_VIDEO) {
 			if (get_cpu_type() >= MESON_CPU_MAJOR_ID_M8) {
 #ifndef CONFIG_MULTI_DEC
-				/*if (has_hevc_vdec())
+				if (has_hevc_vdec())
 					vdec_poweroff(VDEC_HEVC);
 
-				vdec_poweroff(VDEC_1);*/
+				vdec_poweroff(VDEC_1);
 #else
 				if ((port->type & PORT_TYPE_MPTS) &&
 				((port->flag & PORT_FLAG_VFORMAT) == 0)) {

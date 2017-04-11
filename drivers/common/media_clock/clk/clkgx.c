@@ -504,12 +504,12 @@ static int vdec_clock_set(int clk)
 
 static void vdec_clock_on(void)
 {
-	VDEC1_CLOCK_ON();
+	clk_prepare_enable(gclk.vdec_clk);
 }
 
 static void vdec_clock_off(void)
 {
-	VDEC1_CLOCK_OFF();
+	clk_disable_unprepare(gclk.vdec_clk);
 	clock_real_clk[VDEC_1] = 0;
 	gp_pll_release(gp_pll_user_vdec);
 }
@@ -523,12 +523,12 @@ static int hcodec_clock_set(int clk)
 
 static void hcodec_clock_on(void)
 {
-	HCODEC_CLOCK_ON();
+	clk_prepare_enable(gclk.hcodec_clk);
 }
 
 static void hcodec_clock_off(void)
 {
-	HCODEC_CLOCK_OFF();
+	clk_disable_unprepare(gclk.hcodec_clk);
 }
 
 static int gp_pll_user_cb_hevc(struct gp_pll_user_handle_s *user, int event)
@@ -611,12 +611,13 @@ static int hevc_clock_set(int clk)
 
 static void hevc_clock_on(void)
 {
-	HEVC_CLOCK_ON();
+	clk_prepare_enable(gclk.hevc_clk);
+	WRITE_VREG(DOS_GCLK_EN3, 0xffffffff);
 }
 
 static void hevc_clock_off(void)
 {
-	HEVC_CLOCK_OFF();
+	clk_disable_unprepare(gclk.hevc_clk);
 	gp_pll_release(gp_pll_user_hevc);
 	clock_real_clk[VDEC_HEVC] = 0;
 }
