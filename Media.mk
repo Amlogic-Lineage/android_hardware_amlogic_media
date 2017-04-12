@@ -43,9 +43,6 @@ $(shell mkdir $(MEDIA_MODULES) -p)
 endif
 
 MODS_OUT := $(ANDROID_BUILD_TOP)/$(TARGET_OUT)/lib
-ifeq (,$(wildcard $(MODS_OUT)))
-$(error No find the dir of modules out.)
-endif
 
 $(shell cp $(MEDIA_DRIVERS)/* $(MEDIA_MODULES) -rfa)
 
