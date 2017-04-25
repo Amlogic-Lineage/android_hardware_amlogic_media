@@ -44,7 +44,7 @@
 #include <linux/amlogic/media/utils/amports_config.h>
 #include "../../../common/firmware/firmware.h"
 
-#define MC_SIZE (4096 * 4)
+#define MC_SIZE (4096 * 16)
 
 #ifdef CONFIG_WAKELOCK
 static struct wake_lock amvdec_lock;
@@ -288,7 +288,7 @@ static s32 am_vdec_loadmc_buf_ex(struct vdec_s *vdec,
 static s32 am_loadmc_ex(enum vformat_e type,
 		const char *name, char *def, s32(*load)(const u32 *))
 {
-	char *mc_addr = vmalloc(4096 * 4);
+	char *mc_addr = vmalloc(4096 * 16);
 	char *pmc_addr = def;
 	int err;
 
@@ -296,7 +296,7 @@ static s32 am_loadmc_ex(enum vformat_e type,
 		int loaded;
 
 		loaded = get_decoder_firmware_data(type,
-					name, mc_addr, (4096 * 4));
+					name, mc_addr, (4096 * 16));
 		if (loaded > 0)
 			pmc_addr = mc_addr;
 	}

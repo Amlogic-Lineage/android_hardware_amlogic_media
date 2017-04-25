@@ -34,7 +34,7 @@
 #include <linux/amlogic/media/codec_mm/codec_mm.h>
 
 #include <linux/amlogic/media/utils/vdec_reg.h>
-#include <../../../frame_provider/decoder/utils/vdec.h>
+#include "../../../frame_provider/decoder/utils/vdec.h"
 #include <linux/delay.h>
 #include <linux/poll.h>
 #include <linux/of.h>

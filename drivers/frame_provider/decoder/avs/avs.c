@@ -1232,7 +1232,9 @@ static void init_avsp_long_cabac_buf(void)
 static s32 vavs_init(void)
 {
 	int size = -1;
-	char *buf = vmalloc(0x1000 * 8);
+	char *buf = vmalloc(0x1000 * 16);
+	if (IS_ERR_OR_NULL(buf))
+		return -ENOMEM;
 
 	pr_info("vavs_init\n");
 	init_timer(&recycle_timer);

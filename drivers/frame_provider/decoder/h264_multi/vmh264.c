@@ -2131,7 +2131,9 @@ static s32 vh264_init(struct vdec_h264_hw_s *hw)
 		(void *)hw->mc_dma_handle, hw->mc_cpu_addr);
 	if (!firmwareloaded) {
 		int ret = 0, size = -1;
-		char *buf = vmalloc(0x1000 * 8);
+		char *buf = vmalloc(0x1000 * 16);
+		if (IS_ERR_OR_NULL(buf))
+			return -ENOMEM;
 
 		pr_info("start load orignal firmware ...\n");
 

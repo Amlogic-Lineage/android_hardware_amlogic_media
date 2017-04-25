@@ -912,7 +912,9 @@ static void vmpeg12_local_init(void)
 static s32 vmpeg12_init(void)
 {
 	int ret = -1, size = -1;
-	char *buf = vmalloc(0x1000 * 8);
+	char *buf = vmalloc(0x1000 * 16);
+	if (IS_ERR_OR_NULL(buf))
+		return -ENOMEM;
 
 	init_timer(&recycle_timer);
 

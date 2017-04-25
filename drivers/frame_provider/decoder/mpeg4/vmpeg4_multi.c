@@ -1072,7 +1072,9 @@ static void run(struct vdec_s *vdec, void (*callback)(struct vdec_s *, void *),
 	struct vdec_mpeg4_hw_s *hw = (struct vdec_mpeg4_hw_s *)vdec->private;
 	int save_reg = READ_VREG(POWER_CTL_VLD);
 	int ret = -1,size = -1;
-	char *buf = vmalloc(0x1000 << 2);
+	char *buf = vmalloc(0x1000 * 16);
+	if (IS_ERR_OR_NULL(buf))
+		return;
 
 	/* reset everything except DOS_TOP[1] and APB_CBUS[0] */
 	WRITE_VREG(DOS_SW_RESET0, 0xfffffff0);

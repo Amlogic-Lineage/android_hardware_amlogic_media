@@ -960,6 +960,11 @@ static void vvc1_put_timer_func(unsigned long arg)
 
 static s32 vvc1_init(void)
 {
+	int size = -1;
+	char *buf = vmalloc(0x1000 * 16);
+	if (IS_ERR_OR_NULL(buf))
+		return -ENOMEM;
+
 	pr_info("vvc1_init, format %d\n", vvc1_amstream_dec_info.format);
 	init_timer(&recycle_timer);
 
@@ -981,12 +986,20 @@ static s32 vvc1_init(void)
 	} else
 		pr_info("not supported VC1 format\n");
 
-	if (amvdec_loadmc_ex(VFORMAT_VC1, "vc1_mc", NULL) < 0) {
-		amvdec_disable();
+	size = get_firmware_data(VIDEO_DEC_VC1, buf);
+	if (size < 0) {
+		pr_err("get firmware fail.");
+		vfree(buf);
+		return -1;
+	}
 
-		pr_info("failed\n");
+	if (amvdec_loadmc_ex(VFORMAT_VC1, NULL, buf) < 0) {
+		amvdec_disable();
+		vfree(buf);
 		return -EBUSY;
 	}
+
+	vfree(buf);
 
 	stat |= STAT_MC_LOAD;
 

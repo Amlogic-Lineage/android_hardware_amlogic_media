@@ -1396,7 +1396,9 @@ static void vh264_4k2k_local_init(void)
 static s32 vh264_4k2k_init(void)
 {
 	int ret = -1, size = -1;
-	char *buf = vmalloc(0x1000 * 8);
+	char *buf = vmalloc(0x1000 * 16);
+	if (IS_ERR_OR_NULL(buf))
+		return -ENOMEM;
 
 	pr_info("\nvh264_4k2k_init\n");
 

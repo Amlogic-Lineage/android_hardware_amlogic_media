@@ -77,9 +77,9 @@ endif
 TOOLS := /opt/gcc-linaro-5.3-2016.02-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-
 
 modules:
-	$(MAKE) -C $(KDIR) M=$(MEDIA_DRIVERS) ARCH=$(KERNEL_ARCH) \
+	@$(MAKE) -C $(KDIR) M=$(MEDIA_DRIVERS) ARCH=$(KERNEL_ARCH) \
 	CROSS_COMPILE=$(TOOLS) $(CONFIGS) \
-	EXTRA_CFLAGS+=-I$(INCLUDE)
+	EXTRA_CFLAGS+=-I$(INCLUDE) -j64
 
 copy-modules:
 	@echo "start copying media modules."

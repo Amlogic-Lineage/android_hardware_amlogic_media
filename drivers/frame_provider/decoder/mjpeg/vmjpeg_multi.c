@@ -538,7 +538,9 @@ static void run(struct vdec_s *vdec,
 	struct vdec_mjpeg_hw_s *hw =
 		(struct vdec_mjpeg_hw_s *)vdec->private;
 	int i,ret = -1,size = -1;
-	char *buf = vmalloc(0x1000 << 2);
+	char *buf = vmalloc(0x1000 * 16);
+	if (IS_ERR_OR_NULL(buf))
+		return;
 
 	hw->vdec_cb_arg = arg;
 	hw->vdec_cb = callback;

@@ -917,7 +917,9 @@ static s32 vmpeg4_init(void)
 {
 	int trickmode_fffb = 0;
 	int size = -1;
-	char *buf = vmalloc(0x1000 * 8);
+	char *buf = vmalloc(0x1000 * 16);
+	if (IS_ERR_OR_NULL(buf))
+		return -ENOMEM;
 
 	query_video_status(0, &trickmode_fffb);
 

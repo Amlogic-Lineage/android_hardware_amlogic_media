@@ -246,7 +246,6 @@ return (int)(m/n)
 #endif
 }
 
-
 /*USE_BUF_BLOCK*/
 struct BUF_s {
 	int index;
@@ -5994,7 +5993,9 @@ TODO:FOR VERSION
 static s32 vvp9_init(struct VP9Decoder_s *pbi)
 {
 	int size = -1;
-	char *buf = vmalloc(0x1000 * 8);
+	char *buf = vmalloc(0x1000 * 16);
+	if (IS_ERR_OR_NULL(buf))
+		return -ENOMEM;
 
 	init_timer(&pbi->timer);
 
@@ -6023,7 +6024,7 @@ static s32 vvp9_init(struct VP9Decoder_s *pbi)
 
 	amhevc_enable();
 
-	size = get_firmware_data(VIDEO_DEC_VP9, buf);
+	size = get_firmware_data(VIDEO_DEC_VP9_MMU, buf);
 	if (size < 0) {
 		pr_err("get firmware fail.\n");
 		vfree(buf);
@@ -6031,7 +6032,7 @@ static s32 vvp9_init(struct VP9Decoder_s *pbi)
 	}
 
 	if (amhevc_loadmc_ex(VFORMAT_VP9, NULL, buf) < 0) {
-		amvdec_disable();
+		amhevc_disable();
 		vfree(buf);
 		return -EBUSY;
 	}
@@ -6496,7 +6497,11 @@ static void run(struct vdec_s *vdec,
 {
 	struct VP9Decoder_s *pbi =
 		(struct VP9Decoder_s *)vdec->private;
-	int r;
+	int r, size = -1;
+
+	char *buf = vmalloc(0x1000 * 16);
+	if (IS_ERR_OR_NULL(buf))
+		return;
 
 	pbi->vdec_cb_arg = arg;
 	pbi->vdec_cb = callback;
@@ -6525,12 +6530,20 @@ static void run(struct vdec_s *vdec,
 	READ_VREG(HEVC_STREAM_WR_PTR),
 	READ_VREG(HEVC_STREAM_RD_PTR));
 
-	if (amhevc_loadmc_ex(VFORMAT_VP9, "vvp9_mc", NULL) < 0) {
-		amhevc_disable();
-		vp9_print(pbi, 0,
-			"%s: Error amvdec_loadmc fail\n", __func__);
+	size = get_firmware_data(VIDEO_DEC_VP9_MMU, buf);
+	if (size < 0) {
+		pr_err("get firmware fail.\n");
+		vfree(buf);
 		return;
 	}
+
+	if (amhevc_loadmc_ex(VFORMAT_VP9, NULL, buf) < 0) {
+		amhevc_disable();
+		vfree(buf);
+		return;
+	}
+
+	vfree(buf);
 
 	if (vp9_hw_ctx_restore(pbi) < 0) {
 		schedule_work(&pbi->work);

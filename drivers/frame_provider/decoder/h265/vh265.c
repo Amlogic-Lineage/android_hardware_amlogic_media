@@ -7688,6 +7688,8 @@ static s32 vh265_init(struct hevc_state_s *hevc)
 #endif
 	int size = -1;
 	char *buf = vmalloc(0x1000 * 16);
+	if (IS_ERR_OR_NULL(buf))
+		return -ENOMEM;
 
 	init_timer(&hevc->timer);
 
