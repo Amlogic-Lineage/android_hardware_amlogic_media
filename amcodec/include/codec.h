@@ -50,6 +50,7 @@ int codec_set_sub_id(codec_para_t *pcodec);
 int codec_set_sub_type(codec_para_t *pcodec);
 int codec_audio_reinit(codec_para_t *pcodec);
 int codec_set_dec_reset(codec_para_t *pcodec);
+int codec_set_eos(codec_para_t *pcodec, int is_eos);
 
 int codec_write(codec_para_t *pcodec, void *buffer, int len);
 int codec_checkin_pts(codec_para_t *pcodec, unsigned long pts);

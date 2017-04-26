@@ -35,6 +35,25 @@
 
 /* --------------------------------------------------------------------------*/
 /**
+* @brief  codec_set_eos  set eos flag
+*
+* @param[in]  pcodec    Pointer of codec parameter structure
+* @param[in]  source    set 1 for eos flag
+*
+* @return     0 for success, or fail type if < 0
+*/
+
+int codec_set_eos(codec_para_t *pcodec, int is_eos) {
+    int r = codec_h_ioctl(pcodec->handle, AMSTREAM_IOC_SET, AMSTREAM_SET_EOS, is_eos);
+    //if (r < 0) {
+    //    return system_error_to_codec_error(r);
+    //}
+    CODEC_PRINT("codec_set_eos is_eos =%d\n", is_eos);
+    return 0;
+}
+
+/* --------------------------------------------------------------------------*/
+/**
 * @brief  codec_set_demux_source  set ts demux source
 *
 * @param[in]  pcodec    Pointer of codec parameter structure
