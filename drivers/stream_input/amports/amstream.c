@@ -1483,13 +1483,6 @@ static int amstream_open(struct inode *inode, struct file *file)
 			amports_switch_gate("parser_top", 1);
 		}
 
-		if ((get_cpu_type() >= MESON_CPU_MAJOR_ID_M8)
-			&& !is_meson_mtvd_cpu()) {
-			/* TODO: clc gate */
-			/* CLK_GATE_ON(VPU_INTR); */
-			amports_switch_gate("vpu_intr", 1);
-		}
-
 		if (port->type & PORT_TYPE_VIDEO) {
 			/* TODO: mod gate */
 			/* switch_mod_gate_by_name("vdec", 1); */
@@ -1633,13 +1626,6 @@ static int amstream_release(struct inode *inode, struct file *file)
 			/* TODO: mod gate */
 			/* switch_mod_gate_by_name("audio", 0); */
 			/* amports_switch_gate("audio", 0); */
-		}
-
-		if (get_cpu_type() >= MESON_CPU_MAJOR_ID_M8
-			&& !is_meson_mtvd_cpu()) {
-			/* TODO: clc gate */
-			/* /CLK_GATE_OFF(VPU_INTR); */
-			amports_switch_gate("vpu_intr", 0);
 		}
 
 		if (get_cpu_type() >= MESON_CPU_MAJOR_ID_M8) {

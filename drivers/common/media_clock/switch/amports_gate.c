@@ -44,9 +44,6 @@ struct gate_swtch_node gates[] = {
 		.name = "parser_top",
 	},
 	{
-		.name = "vpu_intr",
-	},
-	{
 		.name = "vdec",
 	},
 	{
@@ -67,14 +64,12 @@ mesonstream {
 	dev_name = "mesonstream";
 	status = "okay";
 	clocks = <&clkc CLKID_DOS_PARSER
-		&clkc CLKID_VPU_INTR
 		&clkc CLKID_DEMUX
 		&clkc CLKID_DOS
 		&clkc CLKID_VDEC_MUX
 		&clkc CLKID_HCODEC_MUX
 		&clkc CLKID_HEVC_MUX>;
 	clock-names = "parser_top",
-		"vpu_intr",
 		"demux",
 		"vdec",
 		"clk_vdec_mux",
