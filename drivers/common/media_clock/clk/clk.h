@@ -56,6 +56,7 @@ void hevc_clock_enable(void);
 void hevc_clock_hi_enable(void);
 void vdec2_clock_enable(void);
 void vdec2_clock_hi_enable(void);
+void set_clock_gate(struct gate_switch_node *nodes, int num);
 
 #endif
 int register_vdec_clk_mgr(int cputype[],

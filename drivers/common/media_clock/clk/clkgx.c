@@ -29,30 +29,16 @@
 #include <linux/amlogic/media/utils/log.h>
 
 #include <linux/amlogic/media/registers/register_ops.h>
-
+#include "../switch/amports_gate.h"
 #define MHz (1000000)
 
 struct clk_mux_s {
-	struct clk *vdec_clk;
-	struct clk *hcodec_clk;
-	struct clk *hevc_clk;
+	struct gate_switch_node *vdec_mux_node;
+	struct gate_switch_node *hcodec_mux_node;
+	struct gate_switch_node *hevc_mux_node;
 };
 
 struct clk_mux_s gclk;
-/*
-*HHI_VDEC_CLK_CNTL
-*0x1078[11:9] (fclk = 2000MHz)
-    *0: fclk_div4
-    *1: fclk_div3
-    *2: fclk_div5
-    *3: fclk_div7
-    *4: mpll_clk_out1
-    *5: mpll_clk_out2
-*0x1078[6:0]
-    *divider
-*0x1078[8]
-    *enable
-*/
 
 void vdec1_set_clk(int source, int div)
 {
@@ -82,25 +68,6 @@ void hevc_set_clk(int source, int div)
 		(source << 9) | (div - 1), 16, 16);
 }
 EXPORT_SYMBOL(hevc_set_clk);
-
-void clock_set_init(struct device *dev)
-{
-	gclk.vdec_clk = devm_clk_get(dev, "clk_vdec_mux");
-	if (IS_ERR(gclk.vdec_clk)) {
-		printk("get vdec clk err.\n");
-	}
-
-	gclk.hcodec_clk = devm_clk_get(dev, "clk_hcodec_mux");
-	if (IS_ERR(gclk.hcodec_clk)) {
-		printk("get hcodec clk err.\n");
-	}
-
-	gclk.hevc_clk = devm_clk_get(dev, "clk_hevc_mux");
-	if (IS_ERR(gclk.hevc_clk)) {
-		printk("get hevc clk err.\n");
-	}
-}
-EXPORT_SYMBOL(clock_set_init);
 
 void vdec_get_clk_source(int clk, int *source, int *div, int *rclk)
 {
@@ -151,45 +118,6 @@ void vdec_get_clk_source(int clk, int *source, int *div, int *rclk)
 	}
 }
 EXPORT_SYMBOL(vdec_get_clk_source);
-
-static int vdec_set_clk(int dec, int rate)
-{
-	struct clk *clk = NULL;
-
-	switch (dec) {
-	case VDEC_1:
-		clk = gclk.vdec_clk;
-		WRITE_VREG_BITS(DOS_GCLK_EN0, 0x3ff, 0, 10);
-		break;
-
-	case VDEC_HCODEC:
-		clk = gclk.hcodec_clk;
-		WRITE_VREG_BITS(DOS_GCLK_EN0, 0x7fff, 12, 15);
-		break;
-
-	case VDEC_2:
-		clk = gclk.vdec_clk;
-		WRITE_VREG(DOS_GCLK_EN1, 0x3ff);
-		break;
-
-	case VDEC_HEVC:
-		clk = gclk.hevc_clk;
-		WRITE_VREG(DOS_GCLK_EN3, 0xffffffff);
-		break;
-
-	case VDEC_MAX:
-		break;
-
-	default:
-		pr_info("invaild vdec type.\n");
-	}
-
-	clk_set_rate(clk, rate);
-
-	return 0;
-}
-
-static bool is_gp0_div2 = true;
 
 /* set gp0 648M vdec use gp0 clk*/
 #define VDEC1_648M() \
@@ -262,20 +190,6 @@ static bool is_gp0_div2 = true;
 #define HEVC_CLOCK_OFF()   WRITE_HHI_REG_BITS(HHI_VDEC2_CLK_CNTL, 0, 24, 1)
 
 static int clock_real_clk[VDEC_MAX + 1];
-static struct gp_pll_user_handle_s *gp_pll_user_vdec, *gp_pll_user_hevc;
-
-static int gp_pll_user_cb_vdec(struct gp_pll_user_handle_s *user, int event)
-{
-	pr_info("gp_pll_user_cb_vdec call\n");
-	if (event == GP_PLL_USER_EVENT_GRANT) {
-		if (!IS_ERR(gclk.vdec_clk)) {
-			vdec_set_clk(VDEC_1, 648 * MHz);
-			pr_info("get clock : %lu\n",
-				clk_get_rate(gclk.vdec_clk));
-		}
-	}
-	return 0;
-}
 
 /*
 *enum vformat_e {
@@ -406,45 +320,74 @@ static struct clk_set_setting clks_for_formats[] = {
 
 };
 
+void set_clock_gate(struct gate_switch_node *nodes, int num)
+{
+	struct gate_switch_node *node = NULL;
+
+	do {
+		node = &nodes[num - 1];
+		if (IS_ERR_OR_NULL(node))
+			pr_info("get mux clk err.\n");
+
+		if (!strcmp(node->name, "clk_vdec_mux"))
+			gclk.vdec_mux_node = node;
+		else if (!strcmp(node->name, "clk_hcodec_mux"))
+			gclk.hcodec_mux_node = node;
+		else if (!strcmp(node->name, "clk_hevc_mux"))
+			gclk.hevc_mux_node = node;
+	} while(--num);
+}
+EXPORT_SYMBOL(set_clock_gate);
+
+static int vdec_set_clk(int dec, int rate)
+{
+	struct clk *clk = NULL;
+
+	switch (dec) {
+	case VDEC_1:
+		clk = gclk.vdec_mux_node->clk;
+		WRITE_VREG_BITS(DOS_GCLK_EN0, 0x3ff, 0, 10);
+		break;
+
+	case VDEC_HCODEC:
+		clk = gclk.hcodec_mux_node->clk;
+		WRITE_VREG_BITS(DOS_GCLK_EN0, 0x7fff, 12, 15);
+		break;
+
+	case VDEC_2:
+		clk = gclk.vdec_mux_node->clk;
+		WRITE_VREG(DOS_GCLK_EN1, 0x3ff);
+		break;
+
+	case VDEC_HEVC:
+		clk = gclk.hevc_mux_node->clk;
+		WRITE_VREG(DOS_GCLK_EN3, 0xffffffff);
+		break;
+
+	case VDEC_MAX:
+		break;
+
+	default:
+		pr_info("invaild vdec type.\n");
+	}
+
+	if (IS_ERR_OR_NULL(clk)) {
+		pr_info("the mux clk err.\n");
+		return -1;
+	}
+
+	clk_set_rate(clk, rate);
+
+	return 0;
+}
+
 static int vdec_clock_init(void)
 {
-	gp_pll_user_vdec = gp_pll_user_register("vdec", 0, gp_pll_user_cb_vdec);
-	if (get_cpu_type() >= MESON_CPU_MAJOR_ID_GXL)
-		is_gp0_div2 = false;
-	else
-		is_gp0_div2 = true;
-
-	if (get_cpu_type() >= MESON_CPU_MAJOR_ID_GXL) {
-		pr_info("used fix clk for vdec clk source!\n");
-		//update_vdec_clk_config_settings(1);//DEBUG_TMP
-	}
-	return (gp_pll_user_vdec) ? 0 : -ENOMEM;
+	return 0;
 }
-#if 0
-static void update_clk_with_clk_configs(int clk, int *source, int *div,
-	int *rclk)
-{
-	unsigned int config = 0;//get_vdec_clk_config_settings();//DEBUG_TMP
-
-	if (!config)
-		return;
-	if (config >= 10) {
-		int wantclk;
-
-		wantclk = config;
-		vdec_get_clk_source(wantclk, source, div, rclk);
-	}
-}
-#endif
-#define NO_GP0_PLL 0//(get_vdec_clk_config_settings() == 1)//DEBUG_TMP
-#define ALWAYS_GP0_PLL 0//(get_vdec_clk_config_settings() == 2)//DEBUG_TMP
 
 static int vdec_clock_set(int clk)
 {
-	int use_gpll = 0;
-	int clk_seted = 0;
-	int pll_wait = 0;
-
 	if (clk == 1)
 		clk = 200;
 	else if (clk == 2) {
@@ -453,12 +396,6 @@ static int vdec_clock_set(int clk)
 		else
 			clk = 648;
 	} else if (clk == 0) {
-		/*
-		*used for release gp pull.
-		*if used, release it.
-		*if not used gp pll
-		*do nothing.
-		*/
 		if (clock_real_clk[VDEC_1] == 667 ||
 			(clock_real_clk[VDEC_1] == 648) ||
 			clock_real_clk[VDEC_1] <= 0)
@@ -470,94 +407,26 @@ static int vdec_clock_set(int clk)
 	if ((clk > 500 && clk != 667)) {
 		if (clock_real_clk[VDEC_1] == 648)
 			return 648;
-
-		gp_pll_request(gp_pll_user_vdec);
-
-		while (pll_wait++ < 1000000) {
-			if (clk_get_rate(gclk.vdec_clk) == 648) {
-				clk_seted = 1;
-				break;
-			}
-			udelay(1);
-		}
-
-		if (!clk_seted) {
-			use_gpll = 0;
-			clk = 667;
-			pr_info("get pll failed used fix pll\n");
-		}
+		clk = 667;
 	}
 
-	if (!clk_seted) {/*if 648 not set, */
-		vdec_set_clk(VDEC_1, clk * MHz);
-		pr_info("get clock : %lu\n", clk_get_rate(gclk.vdec_clk));
-	}
-
-	if (!use_gpll)
-		gp_pll_release(gp_pll_user_vdec);
+	vdec_set_clk(VDEC_1, clk * MHz);
 
 	clock_real_clk[VDEC_1] = clk;
-	pr_info("vdec_clock_set to %d\n", clk);
+
+	pr_info("vdec mux clock is %lu Hz\n",
+		clk_get_rate(gclk.vdec_mux_node->clk));
 
 	return clk;
-}
-
-static void vdec_clock_on(void)
-{
-	clk_prepare_enable(gclk.vdec_clk);
-}
-
-static void vdec_clock_off(void)
-{
-	clk_disable_unprepare(gclk.vdec_clk);
-	clock_real_clk[VDEC_1] = 0;
-	gp_pll_release(gp_pll_user_vdec);
-}
-
-static int hcodec_clock_set(int clk)
-{
-	clk_set_rate(gclk.hcodec_clk, clk * MHz);
-	clock_real_clk[VDEC_HCODEC] = clk;
-	return clk;
-}
-
-static void hcodec_clock_on(void)
-{
-	clk_prepare_enable(gclk.hcodec_clk);
-}
-
-static void hcodec_clock_off(void)
-{
-	clk_disable_unprepare(gclk.hcodec_clk);
-}
-
-static int gp_pll_user_cb_hevc(struct gp_pll_user_handle_s *user, int event)
-{
-	pr_info("gp_pll_user_cb_hevc callback\n");
-	if (event == GP_PLL_USER_EVENT_GRANT) {
-		if (!IS_ERR(gclk.hevc_clk)) {
-			vdec_set_clk(VDEC_HEVC, 648 * MHz);
-			pr_info("get clock : %lu\n",
-				clk_get_rate(gclk.hevc_clk));
-		}
-	}
-
-	return 0;
 }
 
 static int hevc_clock_init(void)
 {
-	gp_pll_user_hevc = gp_pll_user_register("hevc", 0, gp_pll_user_cb_hevc);
-
-	return (gp_pll_user_hevc) ? 0 : -ENOMEM;
+	return 0;
 }
 
 static int hevc_clock_set(int clk)
 {
-	int use_gpll = 0;
-	int clk_seted = 0;
-	int pll_wait = 0;
-
 	if (clk == 1)
 		clk = 200;
 	else if (clk == 2) {
@@ -577,49 +446,150 @@ static int hevc_clock_set(int clk)
 	if ((clk > 500 && clk != 667)) {
 		if (clock_real_clk[VDEC_HEVC] == 648)
 			return 648;
-
-		gp_pll_request(gp_pll_user_hevc);
-
-		while (pll_wait++ < 1000000) {
-			if (clk_get_rate(gclk.hevc_clk) == 648) {
-				clk_seted = 1;
-				break;
-			}
-			udelay(1);
-		}
-
-		if (!clk_seted) {
-			use_gpll = 0;
-			clk = 667;
-			pr_info("get pll failed used fix pll\n");
-		}
+		clk = 667;
 	}
 
-	if (!clk_seted) {/*if 648 not set, */
-		vdec_set_clk(VDEC_HEVC, clk * MHz);
-		pr_info("get clock : %lu\n", clk_get_rate(gclk.hevc_clk));
-	}
-
-	if (!use_gpll)
-		gp_pll_release(gp_pll_user_hevc);
+	vdec_set_clk(VDEC_HEVC, clk * MHz);
 
 	clock_real_clk[VDEC_HEVC] = clk;
-	pr_info("hevc_clock_set to %d\n", clk);
+
+	pr_info("hevc mux clock is %lu Hz\n",
+		clk_get_rate(gclk.hevc_mux_node->clk));
 
 	return clk;
 }
 
+static int hcodec_clock_set(int clk)
+{
+	if (clk == 1)
+		clk = 200;
+	else if (clk == 2) {
+		if (clock_real_clk[VDEC_HCODEC] != 648)
+			clk = 500;
+		else
+			clk = 648;
+	} else if (clk == 0) {
+		if (clock_real_clk[VDEC_HCODEC] == 667 ||
+			(clock_real_clk[VDEC_HCODEC] == 648) ||
+			clock_real_clk[VDEC_HCODEC] <= 0)
+			clk = 200;
+		else
+			clk = clock_real_clk[VDEC_HCODEC];
+	}
+
+	if ((clk > 500 && clk != 667)) {
+		if (clock_real_clk[VDEC_HCODEC] == 648)
+			return 648;
+		clk = 667;
+	}
+
+	vdec_set_clk(VDEC_HCODEC, clk * MHz);
+
+	clock_real_clk[VDEC_HCODEC] = clk;
+
+	pr_info("hcodec mux clock is %lu Hz\n",
+		clk_get_rate(gclk.hcodec_mux_node->clk));
+
+	return clk;
+}
+
+static void vdec_clock_on(void)
+{
+	spin_lock_irqsave(&gclk.vdec_mux_node->lock,
+		gclk.vdec_mux_node->flags);
+	if (!gclk.vdec_mux_node->ref_count)
+		clk_prepare_enable(gclk.vdec_mux_node->clk);
+
+	gclk.vdec_mux_node->ref_count++;
+	spin_unlock_irqrestore(&gclk.vdec_mux_node->lock,
+		gclk.vdec_mux_node->flags);
+
+	pr_info("the %-15s clock off, ref cnt: %d\n",
+		gclk.vdec_mux_node->name,
+		gclk.vdec_mux_node->ref_count);
+}
+
+static void vdec_clock_off(void)
+{
+	spin_lock_irqsave(&gclk.vdec_mux_node->lock,
+		gclk.vdec_mux_node->flags);
+	gclk.vdec_mux_node->ref_count--;
+	if (!gclk.vdec_mux_node->ref_count)
+		clk_disable_unprepare(gclk.vdec_mux_node->clk);
+
+	clock_real_clk[VDEC_1] = 0;
+	spin_unlock_irqrestore(&gclk.vdec_mux_node->lock,
+		gclk.vdec_mux_node->flags);
+
+	pr_info("the %-15s clock off, ref cnt: %d\n",
+		gclk.vdec_mux_node->name,
+		gclk.vdec_mux_node->ref_count);
+}
+
+static void hcodec_clock_on(void)
+{
+	spin_lock_irqsave(&gclk.hcodec_mux_node->lock,
+		gclk.hcodec_mux_node->flags);
+	if (!gclk.hcodec_mux_node->ref_count)
+		clk_prepare_enable(gclk.hcodec_mux_node->clk);
+
+	gclk.hcodec_mux_node->ref_count++;
+	spin_unlock_irqrestore(&gclk.hcodec_mux_node->lock,
+		gclk.hcodec_mux_node->flags);
+
+	pr_info("the %-15s clock off, ref cnt: %d\n",
+		gclk.hcodec_mux_node->name,
+		gclk.hcodec_mux_node->ref_count);
+}
+
+static void hcodec_clock_off(void)
+{
+	spin_lock_irqsave(&gclk.hcodec_mux_node->lock,
+		gclk.hcodec_mux_node->flags);
+	gclk.hcodec_mux_node->ref_count--;
+	if (!gclk.hcodec_mux_node->ref_count)
+		clk_disable_unprepare(gclk.hcodec_mux_node->clk);
+
+	spin_unlock_irqrestore(&gclk.hcodec_mux_node->lock,
+		gclk.hcodec_mux_node->flags);
+
+	pr_info("the %-15s clock off, ref cnt: %d\n",
+		gclk.hcodec_mux_node->name,
+		gclk.hcodec_mux_node->ref_count);
+}
+
 static void hevc_clock_on(void)
 {
-	clk_prepare_enable(gclk.hevc_clk);
+	spin_lock_irqsave(&gclk.hevc_mux_node->lock,
+		gclk.hevc_mux_node->flags);
+	if (!gclk.hevc_mux_node->ref_count)
+		clk_prepare_enable(gclk.hevc_mux_node->clk);
+
+	gclk.hevc_mux_node->ref_count++;
 	WRITE_VREG(DOS_GCLK_EN3, 0xffffffff);
+	spin_unlock_irqrestore(&gclk.hevc_mux_node->lock,
+		gclk.hevc_mux_node->flags);
+
+	pr_info("the %-15s clock off, ref cnt: %d\n",
+		gclk.hevc_mux_node->name,
+		gclk.hevc_mux_node->ref_count);
 }
 
 static void hevc_clock_off(void)
 {
-	clk_disable_unprepare(gclk.hevc_clk);
-	gp_pll_release(gp_pll_user_hevc);
+	spin_lock_irqsave(&gclk.hevc_mux_node->lock,
+		gclk.hevc_mux_node->flags);
+	gclk.hevc_mux_node->ref_count--;
+	if (!gclk.hevc_mux_node->ref_count)
+		clk_disable_unprepare(gclk.hevc_mux_node->clk);
+
 	clock_real_clk[VDEC_HEVC] = 0;
+	spin_unlock_irqrestore(&gclk.hevc_mux_node->lock,
+		gclk.hevc_mux_node->flags);
+
+	pr_info("the %-15s clock off, ref cnt: %d\n",
+		gclk.hevc_mux_node->name,
+		gclk.hevc_mux_node->ref_count);
 }
 
 static int vdec_clock_get(enum vdec_type_e core)

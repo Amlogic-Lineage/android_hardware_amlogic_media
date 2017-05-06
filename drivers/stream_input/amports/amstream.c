@@ -1469,11 +1469,6 @@ static int amstream_open(struct inode *inode, struct file *file)
 	priv->port = port;
 
 	if (get_cpu_type() >= MESON_CPU_MAJOR_ID_M6) {
-
-		amports_switch_gate("clk_vdec_mux", 1);
-		amports_switch_gate("clk_hcodec_mux", 1);
-		amports_switch_gate("clk_hevc_mux", 1);
-
 		/* TODO: mod gate */
 		/* switch_mod_gate_by_name("demux", 1); */
 		amports_switch_gate("demux", 1);
@@ -1487,7 +1482,11 @@ static int amstream_open(struct inode *inode, struct file *file)
 			/* TODO: mod gate */
 			/* switch_mod_gate_by_name("vdec", 1); */
 			amports_switch_gate("vdec", 1);
+			amports_switch_gate("clk_vdec_mux", 1);
+			amports_switch_gate("clk_hcodec_mux", 1);
+
 			if (has_hevc_vdec()) {
+				amports_switch_gate("clk_hevc_mux", 1);
 				if (port->type &
 					(PORT_TYPE_MPTS | PORT_TYPE_HEVC))
 					vdec_poweron(VDEC_HEVC);
@@ -1586,7 +1585,7 @@ static int amstream_release(struct inode *inode, struct file *file)
 	}
 	port->flag = 0;
 
-	/* /timestamp_pcrscr_set(0); */
+	/* timestamp_pcrscr_set(0); */
 
 #ifdef DATA_DEBUG
 	if (debug_filp) {
@@ -1595,7 +1594,6 @@ static int amstream_release(struct inode *inode, struct file *file)
 		debug_file_pos = 0;
 	}
 #endif
-
 	if (get_cpu_type() >= MESON_CPU_MAJOR_ID_M6) {
 		if (port->type & PORT_TYPE_VIDEO) {
 			if (get_cpu_type() >= MESON_CPU_MAJOR_ID_M8) {
@@ -1620,6 +1618,7 @@ static int amstream_release(struct inode *inode, struct file *file)
 			/* TODO: mod gate */
 			/* switch_mod_gate_by_name("vdec", 0); */
 			amports_switch_gate("vdec", 0);
+			amports_switch_gate("clk_hcodec_mux", 0);
 		}
 
 		if (port->type & PORT_TYPE_AUDIO) {

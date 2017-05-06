@@ -19,6 +19,14 @@
 #define AMPORT_GATE_H
 #include <linux/device.h>
 
+struct gate_switch_node {
+	struct clk *clk;
+	const char *name;
+	spinlock_t lock;
+	unsigned long flags;
+	int ref_count;
+};
+
 extern int amports_clock_gate_init(struct device *dev);
 extern int amports_switch_gate(const char *name, int enable);
 

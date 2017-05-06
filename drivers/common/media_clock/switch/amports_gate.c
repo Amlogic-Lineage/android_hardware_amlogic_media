@@ -23,20 +23,16 @@
 #include "amports_gate.h"
 #include <linux/amlogic/media/utils/vdec_reg.h>
 #include "../../../stream_input/amports/amports_priv.h"
+#include "../../../frame_provider/decoder/utils/vdec.h"
+#include "../clk/clk.h"
 
-#define DEBUG_REF 0
+
+#define DEBUG_REF 1
 #define GATE_RESET_OK
 
-struct gate_swtch_node {
-	struct clk *clk;
-	const char *name;
-	spinlock_t lock;
-	unsigned long flags;
-	int ref_count;
-};
 #ifdef GATE_RESET_OK
 
-struct gate_swtch_node gates[] = {
+struct gate_switch_node gates[] = {
 	{
 		.name = "demux",
 	},
@@ -56,7 +52,6 @@ struct gate_swtch_node gates[] = {
 		.name = "clk_hevc_mux",
 	},
 };
-
 
 /*
 mesonstream {
@@ -82,7 +77,7 @@ int amports_clock_gate_init(struct device *dev)
 {
 	int i;
 
-	for (i = 0; i < sizeof(gates) / sizeof(struct gate_swtch_node); i++) {
+	for (i = 0; i < sizeof(gates) / sizeof(struct gate_switch_node); i++) {
 		gates[i].clk = devm_clk_get(dev, gates[i].name);
 		if (IS_ERR_OR_NULL(gates[i].clk)) {
 			gates[i].clk = NULL;
@@ -97,29 +92,33 @@ int amports_clock_gate_init(struct device *dev)
 		gates[i].ref_count = 0;
 		spin_lock_init(&gates[i].lock);
 	}
+
+	set_clock_gate(gates, ARRAY_SIZE(gates));
+
 	return 0;
 }
 EXPORT_SYMBOL(amports_clock_gate_init);
 
-static int amports_gate_clk(struct gate_swtch_node *gate_node, int enable)
+static int amports_gate_clk(struct gate_switch_node *gate_node, int enable)
 {
 	spin_lock_irqsave(&gate_node->lock, gate_node->flags);
 	if (enable) {
-		if (DEBUG_REF)
-			pr_info("amports_gate_reset,count: %d\n",
-				gate_node->ref_count);
 		if (gate_node->ref_count == 0)
 			clk_prepare_enable(gate_node->clk);
 
 		gate_node->ref_count++;
+
+		if (DEBUG_REF)
+			pr_info("the %-15s clock on, ref cnt: %d\n",
+				gate_node->name, gate_node->ref_count);
 	} else {
 		gate_node->ref_count--;
-		if (DEBUG_REF)
-			pr_info("amports_gate_reset,count: %d\n",
-				gate_node->ref_count);
-
 		if (gate_node->ref_count == 0)
 			clk_disable_unprepare(gate_node->clk);
+
+		if (DEBUG_REF)
+			pr_info("the %-15s clock off, ref cnt: %d\n",
+				gate_node->name, gate_node->ref_count);
 	}
 	spin_unlock_irqrestore(&gate_node->lock, gate_node->flags);
 	return 0;
@@ -129,7 +128,7 @@ int amports_switch_gate(const char *name, int enable)
 {
 	int i;
 
-	for (i = 0; i < sizeof(gates) / sizeof(struct gate_swtch_node); i++) {
+	for (i = 0; i < sizeof(gates) / sizeof(struct gate_switch_node); i++) {
 		if (!strcmp(name, gates[i].name)) {
 
 			/*pr_info("openclose:%d gate %s control\n", enable,
@@ -175,7 +174,7 @@ int amports_clock_gate_init(struct device *dev)
 }
 EXPORT_SYMBOL(amports_clock_gate_init);
 
-static int amports_switch_gate(struct gate_swtch_node *gate_node, int enable)
+static int amports_switch_gate(struct gate_switch_node *gate_node, int enable)
 {
 	return 0;
 }
