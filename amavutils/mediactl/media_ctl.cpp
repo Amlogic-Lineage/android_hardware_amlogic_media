@@ -9,7 +9,7 @@
 #include <cutils/log.h>
 #include <../mediaconfig/media_config.h>
 #include <amports/amstream.h>
-#include <common_ctl.h>
+#include "common_ctl.h"
 #include <media_ctl.h>
 #include <video_ctl.h>
 
@@ -22,21 +22,21 @@ static int mediactl_set_black_policy(const char* path, int blackout)
 	int para=blackout;
     if (path == NULL)
         return -1;
-	return media_video_set_u32(AMSTREAM_IOC_SET_BLACKOUT_POLICY, para);
+    return media_video_set_int(AMSTREAM_IOC_SET_BLACKOUT_POLICY, para);
 }
 
 static int mediactl_get_black_policy(const char* path)
 {
     if (path == NULL)
         return -1;
-	return media_video_get_u32(AMSTREAM_IOC_GET_BLACKOUT_POLICY);
+    return media_video_get_int(AMSTREAM_IOC_GET_BLACKOUT_POLICY);
 }
 
 static int mediactl_get_disable_video(const char* path)
 {
     if (path == NULL)
         return -1;
-	return media_video_get_u32(AMSTREAM_IOC_GET_VIDEO_DISABLE);
+    return media_video_get_int(AMSTREAM_IOC_GET_VIDEO_DISABLE);
 }
 
 static int mediactl_set_disable_video(const char* path, int mode)
@@ -44,7 +44,7 @@ static int mediactl_set_disable_video(const char* path, int mode)
 	int para=mode;
     if (path == NULL)
         return -1;
-	return media_video_set_u32(AMSTREAM_IOC_SET_VIDEO_DISABLE, para);
+    return media_video_set_int(AMSTREAM_IOC_SET_VIDEO_DISABLE, para);
 }
 
 static int mediactl_set_screen_mode(const char* path, int mode)
@@ -52,14 +52,14 @@ static int mediactl_set_screen_mode(const char* path, int mode)
 	int para=mode;
     if (path == NULL)
         return -1;
-	return media_video_set_u32(AMSTREAM_IOC_SET_SCREEN_MODE, para);
+    return media_video_set_int(AMSTREAM_IOC_SET_SCREEN_MODE, para);
 }
 
 static int mediactl_get_screen_mode(const char* path)
 {
     if (path == NULL)
         return -1;
-	return media_video_get_u32(AMSTREAM_IOC_GET_SCREEN_MODE);
+    return media_video_get_int(AMSTREAM_IOC_GET_SCREEN_MODE);
 }
 
 static int mediactl_clear_video_buf( const char * path, int val)
@@ -67,125 +67,125 @@ static int mediactl_clear_video_buf( const char * path, int val)
     int para=val;
     if (path == NULL)
         return -1;
-	return media_video_set_u32(AMSTREAM_IOC_CLEAR_VBUF, para);
+    return media_video_set_int(AMSTREAM_IOC_CLEAR_VBUF, para);
 }
 int mediactl_get_subtitle_fps(const char* path)
 {
     if (path == NULL)
         return -1;
-	return media_sub_getinfo(SUB_FPS);
+    return media_sub_getinfo(SUB_FPS);
 }
 
 int mediactl_set_subtitle_fps(const char * path,int fps)
 {
     if (path == NULL)
         return -1;
-	return media_sub_setinfo(SUB_FPS, fps);
+    return media_sub_setinfo(SUB_FPS, fps);
 }
 
 int mediactl_get_subtitle_total(const char * path)
 {
     if (path == NULL)
         return -1;
-	return media_sub_getinfo(SUB_TOTAL);
+    return media_sub_getinfo(SUB_TOTAL);
 }
 
 int mediactl_set_subtitle_total(const char * path, int total)
 {
     if (path == NULL)
         return -1;
-	return media_sub_setinfo(SUB_TOTAL, total);
+    return media_sub_setinfo(SUB_TOTAL, total);
 }
 
 int mediactl_get_subtitle_enable(const char * path)
 {
     if (path == NULL)
         return -1;
-	return media_sub_getinfo(SUB_ENABLE);
+    return media_sub_getinfo(SUB_ENABLE);
 }
 
 int mediactl_set_subtitle_enable(const char * path,int enable)
 {
     if (path == NULL)
         return -1;
-	return media_sub_setinfo(SUB_ENABLE, enable);
+    return media_sub_setinfo(SUB_ENABLE, enable);
 }
 
 int mediactl_get_subtitle_index(const char * path)
 {
     if (path == NULL)
         return -1;
-	return media_sub_getinfo(SUB_INDEX);
+    return media_sub_getinfo(SUB_INDEX);
 }
 
 int mediactl_set_subtitle_index(const char * path,int index)
 {
     if (path == NULL)
         return -1;
-	return media_sub_setinfo(SUB_INDEX, index);
+    return media_sub_setinfo(SUB_INDEX, index);
 }
 
 int mediactl_get_subtitle_width(const char * path)
 {
     if (path == NULL)
         return -1;
-	return media_sub_getinfo(SUB_WIDTH);
+    return media_sub_getinfo(SUB_WIDTH);
 }
 
 int mediactl_set_subtitle_width(const char * path, int width)
 {
     if (path == NULL)
         return -1;
-	return media_sub_setinfo(SUB_WIDTH, width);
+    return media_sub_setinfo(SUB_WIDTH, width);
 }
 
 int mediactl_get_subtitle_height(const char * path)
 {
     if (path == NULL)
         return -1;
-	return media_sub_getinfo(SUB_HEIGHT);
+    return media_sub_getinfo(SUB_HEIGHT);
 }
 
 int mediactl_set_subtitle_height(const char * path, int height)
 {
     if (path == NULL)
         return -1;
-	return media_sub_setinfo(SUB_HEIGHT, height);
+    return media_sub_setinfo(SUB_HEIGHT, height);
 }
 
 int mediactl_get_subtitle_subtype(const char * path)
 {
     if (path == NULL)
         return -1;
-	return media_sub_getinfo(SUB_SUBTYPE);
+    return media_sub_getinfo(SUB_SUBTYPE);
 }
 
 int mediactl_set_subtitle_subtype(const char * path, int type)
 {
     if (path == NULL)
         return -1;
-	return media_sub_setinfo(SUB_SUBTYPE, type);
+    return media_sub_setinfo(SUB_SUBTYPE, type);
 }
 
 int mediactl_get_subtitle_curr(const char * path)
 {
     if (path == NULL)
         return -1;
-	return media_sub_getinfo(SUB_CURRENT);
+    return media_sub_getinfo(SUB_CURRENT);
 }
 
 int mediactl_set_subtitle_curr(const char * path, int num)
 {
     if (path == NULL)
         return -1;
-	return media_sub_setinfo(SUB_CURRENT, num);
+    return media_sub_setinfo(SUB_CURRENT, num);
 }
 
 int mediactl_get_subtitle_startpts(const char * path)
 {
     if (path == NULL)
         return -1;
-	return media_sub_getinfo(SUB_START_PTS);
+    return media_sub_getinfo(SUB_START_PTS);
 }
 
 int mediactl_set_subtitle_startpts(const char * path, int startpts)

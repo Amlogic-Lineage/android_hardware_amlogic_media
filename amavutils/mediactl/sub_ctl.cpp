@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <cutils/log.h>
 #include <amports/amstream.h>
-#include <common_ctl.h>
+#include "common_ctl.h"
 #include <sub_ctl.h>
 
 #ifdef  __cplusplus

@@ -11,7 +11,7 @@
 #include <cutils/log.h>
 #include <../mediaconfig/media_config.h>
 #include <amports/amstream.h>
-#include <common_ctl.h>
+#include "../mediactl/common_ctl.h"
 #ifdef  __cplusplus
 extern "C" {
 #endif

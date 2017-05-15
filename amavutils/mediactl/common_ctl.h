@@ -15,13 +15,13 @@
 #ifdef  __cplusplus
 extern "C" {
 #endif
-typedef  unsigned long u32;
+
 #define UnSupport  0xFFFF
 //#define CTRL_PRINT ALOGD
 #define CTRL_PRINT
 int media_open(const char *path, int flags);
 int media_close(int fd);
-int media_control(int fd, int cmd, int paramter);
+int media_control(int fd, int cmd, unsigned long paramter);
 int media_set_ctl(const char * path,int setval);
 int media_get_ctl(const char * path);
 int media_set_ctl_str(const char * path,char* setval);
@@ -38,10 +38,10 @@ int media_decoder_set_ctl(const char * path,int setval);
 int media_decoder_get_ctl(const char * path);
 int media_decoder_set_ctl_str(const char * path,char* setval);
 int media_decoder_get_ctl_str(const char * path, char* buf, int size);
-int media_video_get_u32(int cmd);
-int media_video_set_u32(int cmd, u32 para);
-int media_vfm_get_u32(int cmd);
-int media_vfm_set_u32(int cmd, u32 para);
+int media_video_get_int(int cmd);
+int media_video_set_int(int cmd, int para);
+int media_vfm_get_ulong(int cmd);
+int media_vfm_set_ulong(int cmd, unsigned long para);
 int media_codec_mm_set_ctl_str(const char * path,char* setval);
 int media_codec_mm_get_ctl_str(const char * path, char* buf, int size);
 int media_get_vfm_map_str(char* val,int size);

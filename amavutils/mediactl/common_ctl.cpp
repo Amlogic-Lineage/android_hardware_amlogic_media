@@ -9,7 +9,7 @@
 #include <cutils/log.h>
 #include <../mediaconfig/media_config.h>
 #include <amports/amstream.h>
-#include <common_ctl.h>
+#include "common_ctl.h"
 #ifdef  __cplusplus
 extern "C" {
 #endif
@@ -180,7 +180,7 @@ int media_close(int fd)
     return res;
 }
 
-int media_control(int fd, int cmd, int paramter)
+int media_control(int fd, int cmd, unsigned long paramter)
 {
     int r;
 
@@ -195,18 +195,18 @@ int media_control(int fd, int cmd, int paramter)
     return 0;
 }
 
-int media_get_u32(const char* dev, int cmd)
+int media_get_int(const char* dev, int cmd)
 {
     int fd,res;
 	unsigned long para;
 	fd = media_open(dev,O_RDWR);
-	res = media_control(fd, cmd ,(unsigned long)&para);
+	res = media_control(fd, cmd,(unsigned long)&para);
 	if (0 == res)
 	media_close(fd);
 	ALOGD("get para =%ld\n",para);
 	return para == 1 ? para : 0;
 }
-int media_set_u32(const char* dev, int cmd, u32 setpara)
+int media_set_int(const char* dev, int cmd, int setpara)
 {
     int fd,res;
 	unsigned long para=setpara;
@@ -218,17 +218,17 @@ int media_set_u32(const char* dev, int cmd, u32 setpara)
 	return res;
 }
 
-int media_video_get_u32(int cmd)
+int media_video_get_int(int cmd)
 {
-	return media_get_u32("/dev/amvideo", cmd);
+	return media_get_int("/dev/amvideo", cmd);
 }
 
-int media_video_set_u32(int cmd, u32 para)
+int media_video_set_int(int cmd, int para)
 {
-	return media_set_u32("/dev/amvideo", cmd, para);
+	return media_set_int("/dev/amvideo", cmd, para);
 }
 
-int media_vfm_set_u32(int cmd, u32 para)
+int media_vfm_set_ulong(int cmd, unsigned long para)
 {   int fd,res;
     fd = media_open("dev/vfm",O_RDWR);
     if (fd < 0)
@@ -248,7 +248,7 @@ int media_set_vfm_map_str(const char* val)
         return -1;
     setvfmctl.name[0] = '\0';
     strncpy(setvfmctl.val, val, sizeof(setvfmctl.val));
-    return media_vfm_set_u32(VFM_IOCTL_CMD_SET, (u32)&setvfmctl);
+    return media_vfm_set_ulong(VFM_IOCTL_CMD_SET, (unsigned long)&setvfmctl);
 }
 
 int media_get_vfm_map_str(char* val,int size)
@@ -259,7 +259,7 @@ int media_get_vfm_map_str(char* val,int size)
         return -1;
     setvfmctl.name[0] = '\0';
     setvfmctl.val[0] = '\0';
-    media_vfm_set_u32(VFM_IOCTL_CMD_GET, (u32)&setvfmctl);
+    media_vfm_set_ulong(VFM_IOCTL_CMD_GET, (unsigned long)&setvfmctl);
 	len = sizeof(setvfmctl.val);
     if (len > size)
         len = size;
@@ -277,7 +277,7 @@ int media_rm_vfm_map_str(const char* name,const char* val)
     strncpy(setvfmctl.name,name,sizeof(setvfmctl.name));
     strncpy(setvfmctl.val,val,sizeof(setvfmctl.val));
     CTRL_PRINT("rm vfm: cmd=%s,val %s \n",name,val);
-	return media_vfm_set_u32(VFM_IOCTL_CMD_RM, (u32)&setvfmctl);
+    return media_vfm_set_ulong(VFM_IOCTL_CMD_RM,(unsigned long)&setvfmctl);
 }
 
 int media_add_vfm_map_str(const char* name,const char* val)
@@ -289,7 +289,7 @@ int media_add_vfm_map_str(const char* name,const char* val)
     strncpy(setvfmctl.name,name,sizeof(setvfmctl.name));
     strncpy(setvfmctl.val,val,sizeof(setvfmctl.val));
 	CTRL_PRINT("add vfm: cmd=%s,val %s \n",name,val);
-	return media_vfm_set_u32(VFM_IOCTL_CMD_ADD, (u32)&setvfmctl);
+	return media_vfm_set_ulong(VFM_IOCTL_CMD_ADD,(unsigned long)&setvfmctl);
 }
 
 int media_codec_mm_set_ctl_str(const char * path,char* setval)
