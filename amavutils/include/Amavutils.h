@@ -6,7 +6,6 @@
 #include "Amdisplayutils.h"
 #include "Amvideoutils.h"
 #include "video_ctl.h"
-#include "decoder_ctl.h"
 #include "tsync_ctl.h"
 #include "sub_ctl.h"
 #include "media_ctl.h"
