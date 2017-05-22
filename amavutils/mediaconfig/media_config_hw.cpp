@@ -60,7 +60,6 @@ int media_config_get_str(int fd, const char *cmd, char *val, int len)
         }
         strncpy(val, io.val, ret_len);
         val[ret_len] = '\0';
-		ret = ret_len;
     }
     return ret;
 }

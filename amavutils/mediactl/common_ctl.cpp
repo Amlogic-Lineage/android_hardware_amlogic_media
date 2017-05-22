@@ -30,10 +30,15 @@ int media_get_ctl(const char * path)
     int val = 0;
     ret = media_get_cmd_str(path, buf, 32);
     if (!ret) {
-        sscanf(buf, "%d", &val);
+        if (strstr(buf, "0x"))
+            sscanf(buf, "0x%x", &val);
+        else if (strstr(buf, "0X"))
+            sscanf(buf, "0X%x", &val);
+        else
+            sscanf(buf, "%d", &val);
     }
-	CTRL_PRINT("get path=%s val =%d\n",path,val);
-    return val == 1 ? val : 0;
+    CTRL_PRINT("get path=%s val =%d\n",path,val);
+    return val;
 }
 
 int media_set_ctl_str(const char * path,char* setval)
