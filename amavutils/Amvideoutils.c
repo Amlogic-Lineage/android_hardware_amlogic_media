@@ -20,27 +20,26 @@
 #include "ppmgr/ppmgr.h"
 
 #define SYSCMD_BUFSIZE 40
-#define DISP_DEVICE_PATH "/sys/class/video/device_resolution"
-#define FB_DEVICE_PATH   "/sys/class/graphics/fb0/virtual_size"
-#define ANGLE_PATH       "/dev/ppmgr"
-#define VIDEO_PATH       "/dev/amvideo"
-#define VIDEO_AXIS_PATH       "sys/class/video/axis"
-#define PPMGR_ANGLE_PATH      "sys/class/ppmgr/angle"
-#define VIDEO_GLOBAL_OFFSET_PATH "/sys/class/video/global_offset"
-#define FREE_SCALE_PATH  "/sys/class/graphics/fb0/free_scale"
-#define FREE_SCALE_PATH_FB2  "/sys/class/graphics/fb2/free_scale"
-#define FREE_SCALE_PATH_FB1  "/sys/class/graphics/fb1/free_scale"
-#define PPSCALER_PATH  "/sys/class/ppmgr/ppscaler"
-#define HDMI_AUTHENTICATE_PATH "/sys/module/hdmitx/parameters/hdmi_authenticated"
-#define FREE_SCALE_MODE_PATH   "/sys/class/graphics/fb0/freescale_mode"
-#define WINDOW_AXIS_PATH       "/sys/class/graphics/fb0/window_axis"
-#define DISPLAY_AXIS_PATH       "/sys/class/display/axis"
-#define FREE_SCALE_AXIS_PATH   "/sys/class/graphics/fb0/free_scale_axis"
-#define PPSCALER_RECT  "/sys/class/ppmgr/ppscaler_rect"
-#define WINDOW_AXIS_PATH_FB1      "/sys/class/graphics/fb1/window_axis"
+#define DISP_DEVICE_PATH           "/sys/class/video/device_resolution"
+#define FB_DEVICE_PATH             "/sys/class/graphics/fb0/virtual_size"
+#define ANGLE_PATH                 "/dev/ppmgr"
+#define VIDEO_PATH                 "/dev/amvideo"
+#define VIDEO_AXIS_PATH            "sys/class/video/axis"
+#define PPMGR_ANGLE_PATH           "sys/class/ppmgr/angle"
+#define VIDEO_GLOBAL_OFFSET_PATH   "/sys/class/video/global_offset"
+#define FREE_SCALE_PATH            "/sys/class/graphics/fb0/free_scale"
+#define FREE_SCALE_PATH_FB2        "/sys/class/graphics/fb2/free_scale"
+#define FREE_SCALE_PATH_FB1        "/sys/class/graphics/fb1/free_scale"
+#define PPSCALER_PATH              "/sys/class/ppmgr/ppscaler"
+#define HDMI_AUTHENTICATE_PATH     "/sys/module/hdmitx/parameters/hdmi_authenticated"
+#define FREE_SCALE_MODE_PATH       "/sys/class/graphics/fb0/freescale_mode"
+#define WINDOW_AXIS_PATH           "/sys/class/graphics/fb0/window_axis"
+#define DISPLAY_AXIS_PATH          "/sys/class/display/axis"
+#define FREE_SCALE_AXIS_PATH       "/sys/class/graphics/fb0/free_scale_axis"
+#define PPSCALER_RECT              "/sys/class/ppmgr/ppscaler_rect"
+#define WINDOW_AXIS_PATH_FB1       "/sys/class/graphics/fb1/window_axis"
 #define FREE_SCALE_AXIS_PATH_FB1   "/sys/class/graphics/fb1/free_scale_axis"
-
-
+#define PROC_SETMODE_COMPLETE      "sys.setmode.complete" //set this prop to true, when set outputmode complete
 
 static int rotation = 0;
 static int disp_width = 1920;
@@ -454,6 +453,19 @@ void set_scale(int x, int y, int w, int h, int *dst_x, int *dst_y, int *dst_w, i
 int amvideo_utils_set_virtual_position(int32_t x, int32_t y, int32_t w, int32_t h, int rotation)
 {
     LOG_FUNCTION_NAME
+
+    //this code block ensure to exec this func, when system_control setSourceOutputMode complete or Timeout.
+    for (int i = 0; i < 20; i++) {
+        char value[30] = {0};
+        property_get(PROC_SETMODE_COMPLETE, value, "null");
+        if (!strcmp(value, "true") || !strcmp(value, "null")) {
+            break;
+        } else {
+            LOGI("wait set outputmode complete, SLEEP 50ms!");
+            usleep(50000);
+        }
+    }
+
     //for osd rotation, need convert the axis first
     int osd_rotation = amdisplay_utils_get_osd_rotation();
     if (osd_rotation > 0) {
