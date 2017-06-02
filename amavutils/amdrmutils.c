@@ -146,6 +146,7 @@ int tvp_mm_get_mem_region(struct tvp_region* region, int region_size)
     //rnum = min(region_size/sizeof(struct tvp_region), MAX_REGION);
     rnum = region_size/sizeof(struct tvp_region);
 
+#if 0
     fd = open(DI_TVP_REGION_PATH, O_RDONLY, 0644);
     if (fd >=0 && rnum >= 1) {
         len = read(fd, buf, BUF_LEN);
@@ -159,6 +160,7 @@ int tvp_mm_get_mem_region(struct tvp_region* region, int region_size)
             ALOGE("segment DI: [%llx-%llx]\n", i, start, end);
         }
     }
+#endif
 
     fd = open(TVP_REGION_PATH, O_RDONLY, 0644);
     if (fd >= 0) {
