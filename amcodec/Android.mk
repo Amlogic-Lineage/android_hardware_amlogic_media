@@ -1,8 +1,6 @@
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
-
-AMADEC_PATH:=$(TOP)/hardware/amlogic/LibAudio/amadec/
-
+include $(LOCAL_PATH)/../media_base_config.mk
 LOCAL_SRC_FILES := \
 	codec/codec_ctrl.c \
 	codec/codec_h_ctrl.c \
