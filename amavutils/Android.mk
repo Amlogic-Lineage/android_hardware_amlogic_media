@@ -50,6 +50,9 @@ LOCAL_SHARED_LIBRARIES := \
 	libgui
 
 #LOCAL_SHARED_LIBRARIES += libandroid_runtime  libnativehelper
+ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 26 && echo OK),OK)
+LOCAL_PROPRIETARY_MODULE := true
+endif
 
 LOCAL_MODULE := libamavutils
 LOCAL_MODULE_TAGS := optional
@@ -101,7 +104,9 @@ LOCAL_SHARED_LIBRARIES := \
 	liblog
 
 #LOCAL_SHARED_LIBRARIES += libandroid_runtime libnativehelper
-
+ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 26 && echo OK),OK)
+LOCAL_PROPRIETARY_MODULE := true
+endif
 LOCAL_MODULE := libamavutils
 LOCAL_MODULE_TAGS := optional
 LOCAL_ARM_MODE := arm
@@ -154,7 +159,9 @@ LOCAL_SHARED_LIBRARIES := \
 	libamavutils
 
 #LOCAL_SHARED_LIBRARIES += libandroid_runtime   libnativehelper
-
+ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 26 && echo OK),OK)
+LOCAL_PROPRIETARY_MODULE := true
+endif
 LOCAL_MODULE := libamavutils_alsa
 LOCAL_MODULE_TAGS := optional
 LOCAL_ARM_MODE := arm
@@ -206,7 +213,9 @@ LOCAL_SHARED_LIBRARIES := \
 	libgui
 
 #LOCAL_SHARED_LIBRARIES += libandroid_runtime   libnativehelper
-
+ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 26 && echo OK),OK)
+LOCAL_PROPRIETARY_MODULE := true
+endif
 LOCAL_MODULE := libamavutils_alsa
 LOCAL_MODULE_TAGS := optional
 LOCAL_ARM_MODE := arm
