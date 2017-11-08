@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2014 Amlogic, Inc. All rights reserved.
+ *
+ * This source code is subject to the terms and conditions defined in the
+ * file 'LICENSE' which is part of this source code package.
+ *
+ * Description:
+ */
+
+
 
 #define LOG_TAG "amavutils"
 
@@ -39,7 +49,6 @@
 #define PPSCALER_RECT              "/sys/class/ppmgr/ppscaler_rect"
 #define WINDOW_AXIS_PATH_FB1       "/sys/class/graphics/fb1/window_axis"
 #define FREE_SCALE_AXIS_PATH_FB1   "/sys/class/graphics/fb1/free_scale_axis"
-#define PROC_SETMODE_COMPLETE      "sys.setmode.complete" //set this prop to true, when set outputmode complete
 
 static int rotation = 0;
 static int disp_width = 1920;
@@ -453,19 +462,6 @@ void set_scale(int x, int y, int w, int h, int *dst_x, int *dst_y, int *dst_w, i
 int amvideo_utils_set_virtual_position(int32_t x, int32_t y, int32_t w, int32_t h, int rotation)
 {
     LOG_FUNCTION_NAME
-
-    //this code block ensure to exec this func, when system_control setSourceOutputMode complete or Timeout.
-    for (int i = 0; i < 20; i++) {
-        char value[PROPERTY_VALUE_MAX] = {0};
-        property_get(PROC_SETMODE_COMPLETE, value, "null");
-        if (!strcmp(value, "true") || !strcmp(value, "null")) {
-            break;
-        } else {
-            LOGI("wait set outputmode complete, SLEEP 50ms!");
-            usleep(50000);
-        }
-    }
-
     //for osd rotation, need convert the axis first
     int osd_rotation = amdisplay_utils_get_osd_rotation();
     if (osd_rotation > 0) {
