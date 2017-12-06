@@ -43,6 +43,7 @@ const char *MEDIA_MIMETYPE_VIDEO_WMV1 = "video/wmv1";
 const char *MEDIA_MIMETYPE_VIDEO_WMV2 = "video/wmv2";
 const char *MEDIA_MIMETYPE_VIDEO_WMV3 = "video/wmv3";
 const char *MEDIA_MIMETYPE_VIDEO_MSWMV3 = "video/x-ms-wmv";
+const char *MEDIA_MIMETYPE_VIDEO_AVS = "video/avs";
 
 
 const char *MEDIA_MIMETYPE_AUDIO_DTS = "audio/dtshd";
@@ -66,6 +67,7 @@ const char *MEDIA_MIMETYPE_TEXT_TTML = "application/ttml+xml";
 
 const char *MEDIA_MIMETYPE_CONTAINER_ASF = "video/x-ms-asf";
 const char *MEDIA_MIMETYPE_CONTAINER_FLV = "video/x-flv";
+const char *MEDIA_MIMETYPE_CONTAINER_PMP = "video/pmp";
 const char *MEDIA_MIMETYPE_CONTAINER_AIFF = "audio/x-aiff";
 const char *MEDIA_MIMETYPE_CONTAINER_DDP = "audio/ddp";
 }  // namespace android

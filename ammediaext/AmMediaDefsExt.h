@@ -44,6 +44,7 @@ extern const char *MEDIA_MIMETYPE_VIDEO_WMV1;
 extern const char *MEDIA_MIMETYPE_VIDEO_WMV2;
 extern const char *MEDIA_MIMETYPE_VIDEO_WMV3;
 extern const char *MEDIA_MIMETYPE_VIDEO_MSWMV3;
+extern const char *MEDIA_MIMETYPE_VIDEO_AVS;
 
 extern const char *MEDIA_MIMETYPE_VIDEO_VC1;
 extern const char *MEDIA_MIMETYPE_VIDEO_WVC1;
@@ -71,6 +72,7 @@ extern const char *MEDIA_MIMETYPE_TEXT_TTML;
 
 extern const char *MEDIA_MIMETYPE_CONTAINER_ASF;
 extern const char *MEDIA_MIMETYPE_CONTAINER_FLV;
+extern const char *MEDIA_MIMETYPE_CONTAINER_PMP;
 extern const char *MEDIA_MIMETYPE_CONTAINER_DDP;
 extern const char *MEDIA_MIMETYPE_CONTAINER_AIFF;
 }  // namespace android
