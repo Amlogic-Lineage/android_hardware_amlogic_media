@@ -802,9 +802,9 @@ int codec_init(codec_para_t *pcodec)
                 a_ainfo.extradata_size = sizeof(Asf_audio_info_t);
             }
         }
-        //DEBUG_TMP audio_start(&pcodec->adec_priv, &a_ainfo);
+        audio_start(&pcodec->adec_priv, &a_ainfo);
         if (pcodec->avsync_threshold > 0) {
-            //DEBUG_TMP audio_set_avsync_threshold(pcodec->adec_priv, pcodec->avsync_threshold);
+            audio_set_avsync_threshold(pcodec->adec_priv, pcodec->avsync_threshold);
         }
     }
 
@@ -813,7 +813,7 @@ int codec_init(codec_para_t *pcodec)
 
 void codec_audio_basic_init(void)
 {
-    //DEBUG_TMP audio_basic_init();
+    audio_basic_init();
 }
 
 /* --------------------------------------------------------------------------*/
@@ -861,7 +861,7 @@ int codec_close(codec_para_t *pcodec)
 {
     int res = 0;
     if (pcodec->has_audio) {
-        //DEBUG_TMP audio_stop(&pcodec->adec_priv);
+        audio_stop(&pcodec->adec_priv);
         CODEC_PRINT("[%s]audio stop OK!\n", __FUNCTION__);
     }
 #ifdef SUBTITLE_EVENT
@@ -886,7 +886,7 @@ void codec_close_audio(codec_para_t *pcodec)
 {
     if (pcodec) {
         pcodec->has_audio = 0;
-        //DEBUG_TMP audio_stop(&pcodec->adec_priv);
+        audio_stop(&pcodec->adec_priv);
     }
     return;
 }
@@ -901,7 +901,7 @@ void codec_close_audio(codec_para_t *pcodec)
 void codec_close_audio_async(codec_para_t *pcodec)
 {
     if (pcodec) {
-        //DEBUG_TMP audio_stop_async(&pcodec->adec_priv);
+        audio_stop_async(&pcodec->adec_priv);
     }
     return;
 }
@@ -961,7 +961,7 @@ void codec_resume_audio(codec_para_t *pcodec, unsigned int orig)
                 a_ainfo.extradata_size = sizeof(Asf_audio_info_t);
             }
         }
-        //DEBUG_TMP audio_start(&pcodec->adec_priv, &a_ainfo);
+        audio_start(&pcodec->adec_priv, &a_ainfo);
     }
     return;
 }
@@ -1071,9 +1071,9 @@ int codec_get_vdec_state(codec_para_t *p, struct vdec_status *vdec)
 /* --------------------------------------------------------------------------*/
 int codec_get_adec_state(codec_para_t *p, struct adec_status *adec)
 {
-    //DEBUG_TMP if (get_audio_decoder() == AUDIO_ARM_DECODER) {
-        //DEBUG_TMP return get_decoder_status(p->adec_priv, adec);
-    //DEBUG_TMP }
+    if (get_audio_decoder() == AUDIO_ARM_DECODER) {
+        return get_decoder_status(p->adec_priv, adec);
+    }
     int r;
     if (codec_h_is_support_new_cmd()) {
         struct adec_status astatus;
@@ -1137,7 +1137,7 @@ int codec_pause(codec_para_t *p)
     if (p) {
         CODEC_PRINT("[codec_pause]p->has_audio=%d\n", p->has_audio);
         if (p->has_audio) {
-            //DEBUG_TMP audio_pause(p->adec_priv);
+            audio_pause(p->adec_priv);
         }
         if (p->has_video) {
             ret = video_pause(p);
@@ -1162,7 +1162,7 @@ int codec_resume(codec_para_t *p)
     if (p) {
         CODEC_PRINT("[codec_resume]p->has_audio=%d\n", p->has_audio);
         if (p->has_audio) {
-            //DEBUG_TMP audio_resume(p->adec_priv);
+            audio_resume(p->adec_priv);
         }
         if (p->has_video) {
             ret = video_resume(p);
@@ -1729,7 +1729,7 @@ int codec_audio_isready(codec_para_t *p)
         return -1;
     }
     if (p->has_audio) {
-        //DEBUG_TMP audio_isready = audio_dec_ready(p->adec_priv);
+        audio_isready = audio_dec_ready(p->adec_priv);
     }
 
     return audio_isready;
@@ -1753,7 +1753,7 @@ int codec_audio_get_nb_frames(codec_para_t *p)
     }
 
     if (p->has_audio) {
-        //DEBUG_TMP audio_nb_frames = audio_get_decoded_nb_frames(p->adec_priv);
+        audio_nb_frames = audio_get_decoded_nb_frames(p->adec_priv);
     }
     //CODEC_PRINT("[%s]get audio decoded frame number[%d]!\n", __FUNCTION__, audio_nb_frames);
     return audio_nb_frames;
@@ -2087,7 +2087,7 @@ int codec_set_av_threshold(codec_para_t *pcodec, int threshold)
 {
     int ret = 0;
     if (pcodec->has_audio) {
-        //DEBUG_TMP audio_set_av_sync_threshold(pcodec->adec_priv, threshold);
+        audio_set_av_sync_threshold(pcodec->adec_priv, threshold);
     } else {
         CODEC_PRINT("[codec_set_av_threshold] error, no audio!\n");
         ret = -1;
@@ -2308,7 +2308,7 @@ int codec_get_audio_cur_delay_ms(codec_para_t *pcodec, int *delay_ms)
         return -1;
     }
     if (pcodec->has_audio) {
-        //DEBUG_TMP adec_delay = audio_get_decoded_pcm_delay(pcodec->adec_priv);
+        adec_delay = audio_get_decoded_pcm_delay(pcodec->adec_priv);
         if (adec_delay < 0) {
             adec_delay = 0;
         }
@@ -2431,17 +2431,17 @@ int codec_get_last_checkin_apts(codec_para_t* pcodec, unsigned long* apts)
 
 int codec_get_pcm_level(codec_para_t* pcodec, unsigned int* level)
 {
-    return 0;//DEBUG_TMP audio_get_pcm_level(pcodec->adec_priv);
+    return audio_get_pcm_level(pcodec->adec_priv);
 }
 
 int codec_set_skip_bytes(codec_para_t* pcodec, unsigned int bytes)
 {
-    return 0;//DEBUG_TMP audio_set_skip_bytes(pcodec->adec_priv, bytes);
+    return audio_set_skip_bytes(pcodec->adec_priv, bytes);
 }
 
 int codec_get_dsp_apts(codec_para_t* pcodec, unsigned int * apts)
 {
-    return 0;//DEBUG_TMP audio_get_pts(pcodec->adec_priv);
+    return audio_get_pts(pcodec->adec_priv);
 }
 
 /* --------------------------------------------------------------------------*/
