@@ -33,7 +33,7 @@ LOCAL_C_INCLUDES := \
 	$(JNI_H_INCLUDE) \
 	$(TOP)/frameworks/native/services \
 	$(TOP)/frameworks/native/include \
-	$(TOP)/vendor/amlogic/frameworks/services \
+	$(TOP)/$(BOARD_AML_VENDOR_PATH)/frameworks/services \
 	$(LOCAL_PATH)/../mediaconfig \
 	$(TOP)/frameworks/native/libs/nativewindow/include
 
@@ -91,7 +91,7 @@ LOCAL_C_INCLUDES := \
 	$(JNI_H_INCLUDE) \
 	$(TOP)/frameworks/native/services \
 	$(TOP)/frameworks/native/include \
-	$(TOP)/vendor/amlogic/frameworks/services \
+	$(TOP)/$(BOARD_AML_VENDOR_PATH)/frameworks/services \
 	$(TOP)/frameworks/native/libs/nativewindow/include
 
 LOCAL_SHARED_LIBRARIES := \
@@ -143,7 +143,7 @@ LOCAL_C_INCLUDES := \
 	$(JNI_H_INCLUDE) \
 	$(TOP)/frameworks/native/services \
 	$(TOP)/frameworks/native/include \
-	$(TOP)/vendor/amlogic/frameworks/services \
+	$(TOP)/$(BOARD_AML_VENDOR_PATH)/frameworks/services \
 	$(LOCAL_PATH)/../mediaconfig \
 	$(TOP)/frameworks/native/libs/nativewindow/include
 
@@ -199,7 +199,7 @@ LOCAL_C_INCLUDES := \
 	$(JNI_H_INCLUDE) \
 	$(TOP)/frameworks/native/services \
 	$(TOP)/frameworks/native/include \
-	$(TOP)/vendor/amlogic/frameworks/services \
+	$(TOP)/$(BOARD_AML_VENDOR_PATH)/frameworks/services \
 	$(LOCAL_PATH)/../mediaconfig \
 	$(TOP)/frameworks/native/libs/nativewindow/include
 
