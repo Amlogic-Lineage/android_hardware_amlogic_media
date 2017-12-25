@@ -7,7 +7,7 @@ LOCAL_SRC_FILES := \
 	codec/codec_ctrl.c \
 	codec/codec_h_ctrl.c \
 	codec/codec_msg.c \
-#	audio_ctl/audio_ctrl.c
+	audio_ctl/audio_ctrl.c
 
 LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)/include \
@@ -17,7 +17,7 @@ LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)/audio_ctl
 
 LOCAL_ARM_MODE := arm
-#LOCAL_STATIC_LIBRARIES := libamadec
+LOCAL_STATIC_LIBRARIES := libamadec
 LOCAL_MODULE:= libamcodec
 
 ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 26 && echo OK),OK)
@@ -32,7 +32,7 @@ LOCAL_SRC_FILES := \
 	codec/codec_ctrl.c \
 	codec/codec_h_ctrl.c \
 	codec/codec_msg.c \
-#	audio_ctl/audio_ctrl.c
+	audio_ctl/audio_ctrl.c
 
 LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)/include \
@@ -51,7 +51,7 @@ LOCAL_SHARED_LIBRARIES := \
 	libc \
 	liblog \
 	libamavutils \
-#	libamadec
+	libamadec
 
 LOCAL_ARM_MODE := arm
 LOCAL_MODULE:= libamcodec
