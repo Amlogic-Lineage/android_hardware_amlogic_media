@@ -27,8 +27,8 @@ extern "C" {
 #endif
 
 #define UnSupport  0xFFFF
-//#define CTRL_PRINT ALOGD
-#define CTRL_PRINT
+#define CTRL_PRINT ALOGD
+//#define CTRL_PRINT
 int media_open(const char *path, int flags);
 int media_close(int fd);
 int media_control(int fd, int cmd, unsigned long paramter);

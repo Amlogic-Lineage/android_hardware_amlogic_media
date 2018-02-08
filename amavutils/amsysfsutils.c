@@ -40,7 +40,7 @@ int amsysfs_set_sysfs_str(const char *path, const char *val)
 {
     int fd,ret;
     int bytes;
-    ret = mediactl_set_str_func(path,val);
+    ret = mediactl_set_str_func(path, (char *)val);
 	if (ret == UnSupport)
     {
     fd = open(path, O_CREAT | O_RDWR | O_TRUNC, 0644);

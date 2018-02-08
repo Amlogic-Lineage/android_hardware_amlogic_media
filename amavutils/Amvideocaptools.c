@@ -21,7 +21,7 @@
 
 
 #define VIDEOCAPDEV "/dev/amvideocap0"
-int amvideocap_capframe(char *buf, int size, int *w, int *h, int fmt_ignored, int at_end, int* ret_size, int fmt)
+int amvideocap_capframe(char *buf, int size, int *w, int *h, int fmt_ignored __unused, int at_end, int* ret_size, int fmt)
 {
     int fd = open(VIDEOCAPDEV, O_RDWR);
     int ret = 0;
@@ -52,7 +52,7 @@ int amvideocap_capframe(char *buf, int size, int *w, int *h, int fmt_ignored, in
     return ret;
 }
 
-int amvideocap_capframe_with_rect(char *buf, int size, int src_rect_x, int src_rect_y, int *w, int *h, int fmt_ignored, int at_end, int* ret_size)
+int amvideocap_capframe_with_rect(char *buf, int size, int src_rect_x, int src_rect_y, int *w, int *h, int fmt_ignored __unused, int at_end, int* ret_size)
 {
     int fd = open(VIDEOCAPDEV, O_RDWR);
     int ret = 0;

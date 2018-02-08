@@ -38,6 +38,7 @@ LOCAL_C_INCLUDES := \
 	$(TOP)/frameworks/native/libs/nativewindow/include
 
 LOCAL_CFLAGS += -DANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION)
+LOCAL_CFLAGS += -Werror -Wformat -Wimplicit-function-declaration
 
 LOCAL_SHARED_LIBRARIES := \
 	libutils \
@@ -75,7 +76,7 @@ endif
 endif
 
 LOCAL_CFLAGS += -DANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION)
-
+LOCAL_CFLAGS += -Werror -Wformat -Wimplicit-function-declaration
 LOCAL_SRC_LISTS := \
 	$(wildcard $(LOCAL_PATH)/*.c) \
 	$(wildcard $(LOCAL_PATH)/*.cpp) \
@@ -128,7 +129,7 @@ endif
 endif
 
 LOCAL_CFLAGS += -DANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION)
-
+LOCAL_CFLAGS += -Werror -Wformat -Wimplicit-function-declaration
 LOCAL_SRC_LISTS := \
 	$(wildcard $(LOCAL_PATH)/*.c) \
 	$(wildcard $(LOCAL_PATH)/*.cpp) \
@@ -183,7 +184,7 @@ endif
 endif
 
 LOCAL_CFLAGS += -DANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION)
-
+LOCAL_CFLAGS += -Werror -Wformat -Wimplicit-function-declaration
 LOCAL_SRC_LISTS := \
 	$(wildcard $(LOCAL_PATH)/*.c) \
 	$(wildcard $(LOCAL_PATH)/*.cpp) \

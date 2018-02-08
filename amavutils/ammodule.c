@@ -115,7 +115,7 @@ int ammodule_load_module(const char *modulename, const struct ammodule_t **modul
 {
     int status = -ENOENT;;
     int i;
-    const struct ammodule_t *hmi = NULL;
+    //const struct ammodule_t *hmi = NULL;
     char prop[PATH_MAX];
     char path[PATH_MAX];
     char name[PATH_MAX];
@@ -214,7 +214,7 @@ int  ammodule_simple_load_module(char* name)
 {
     int ret;
     struct ammodule_t *module;
-    ret = ammodule_load_module(name, &module);
+    ret = ammodule_load_module(name, (const struct ammodule_t **)&module);
     if (ret == 0) {
         ret = ammodule_open_module(module);
     }

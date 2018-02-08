@@ -13,7 +13,7 @@
 
 #define LOG_TAG "amthreadpool"
 #include <utils/Log.h>
-
+#include <pthread.h>
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -53,6 +53,7 @@ typedef struct threadpool_thread_data {
 static int amthreadpool_release(pthread_t  pid);
 static threadpool_t * amthreadpool_create_pool(pthread_t  pid);
 
+/*
 static threadpool_t * amthreadpool_findthead_pool(pthread_t  pid)
 {
     struct item *item;
@@ -62,6 +63,7 @@ static threadpool_t * amthreadpool_findthead_pool(pthread_t  pid)
     }
     return NULL;
 }
+*/
 
 static threadpool_thread_data_t * amthreadpool_findthead_thread_data(pthread_t pid)
 {
@@ -76,9 +78,9 @@ static threadpool_thread_data_t * amthreadpool_findthead_thread_data(pthread_t p
 /*creat thread pool  for main thread*/
 static threadpool_t * amthreadpool_create_pool(pthread_t pid)
 {
-    struct item *poolitem;
+    //struct item *poolitem;
     threadpool_t *pool;
-    int ret = -1;
+    //int ret = -1;
     unsigned long exdata[2];
     pool = malloc(sizeof(threadpool_t));
     if (!pool) {
@@ -103,7 +105,7 @@ static threadpool_t * amthreadpool_create_pool(pthread_t pid)
 
 static int amthreadpool_pool_add_thread(threadpool_t *pool, unsigned long pid, threadpool_thread_data_t* thread)
 {
-    int ret;
+    int ret = 0;
     unsigned long exdata[2];
     exdata[0] = (unsigned long)thread;
     if (pool) {
@@ -168,13 +170,13 @@ static int64_t amthreadpool_gettime(void)
 
 int amthreadpool_thread_usleep_in_monotonic(int us)
 {
+/* 64bit compiler do not have pthread_cond_timedwait_monotonic_np */
+#ifndef __aarch64__
     pthread_t pid = pthread_self();
     struct timespec pthread_ts, tnow;
     int64_t us64 = us;
     threadpool_thread_data_t *t = amthreadpool_findthead_thread_data(pid);
     int ret = 0;
-/* 64bit compiler do not have pthread_cond_timedwait_monotonic_np */
-#ifndef __aarch64__
     if (!t) {
         ///ALOGE("%lu thread sleep data not found!!!\n", pid);
         usleep(us);//for not deadlock.
@@ -190,7 +192,9 @@ int amthreadpool_thread_usleep_in_monotonic(int us)
     pthread_ts.tv_sec = tnow.tv_sec + (us64 + tnow.tv_nsec / 1000) / 1000000;
     pthread_ts.tv_nsec = (us64 * 1000 + tnow.tv_nsec) % 1000000000;
     pthread_mutex_lock(&t->pthread_mutex);
+#if defined(__LP32__) && __ANDROID_API__ < 21
     ret = pthread_cond_timedwait_monotonic_np(&t->pthread_cond, &t->pthread_mutex, &pthread_ts);
+#endif
 
     pthread_mutex_unlock(&t->pthread_mutex);
     return ret;
@@ -230,7 +234,7 @@ int amthreadpool_thread_usleep_in(int us)
     pthread_mutex_unlock(&t->pthread_mutex);
     return ret;
 }
-int amthreadpool_thread_usleep_debug(int us, const char *func, int line)
+int amthreadpool_thread_usleep_debug(int us, const char *func __unused, int line __unused)
 {
 
     int64_t starttime = amthreadpool_gettime();
@@ -244,7 +248,7 @@ int amthreadpool_thread_usleep_debug(int us, const char *func, int line)
 #endif
     endtime = amthreadpool_gettime();
     if ((endtime - starttime - us) > 100 * 1000) {
-        ALOGE("***amthreadpool_thread_usleep wast more time wait %d us, real %lld us\n", us, (int64_t)(endtime - starttime));
+        //ALOGE("***amthreadpool_thread_usleep wast more time wait %d us, real %lld us\n", us, (int64_t)(endtime - starttime));
     }
     return ret;
 }
