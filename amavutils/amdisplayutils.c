@@ -47,6 +47,7 @@
 //#define LOG_FUNCTION_NAME LOGI("%s-%d\n",__FUNCTION__,__LINE__);
 #define LOG_FUNCTION_NAME
 
+/*
 static void get_display_mode(char *mode)
 {
     int fd;
@@ -59,7 +60,7 @@ static void get_display_mode(char *mode)
     if (fd >= 0) {
         memset(mode, 0, 16); // clean buffer and read 15 byte to avoid strlen > 15
         read(fd, mode, 15);
-        LOGI("[get_display_mode]mode=%s strlen=%d\n", mode, strlen(mode));
+        LOGI("[get_display_mode]mode=%s strlen=%ld\n", mode, strlen(mode));
         mode[strlen(mode)] = '\0';
         close(fd);
     } else {
@@ -68,6 +69,8 @@ static void get_display_mode(char *mode)
     LOGI("[get_display_mode]display_mode=%s\n", mode);
     return ;
 }
+*/
+
 int amdisplay_utils_get_size(int *width, int *height)
 {
     LOG_FUNCTION_NAME
@@ -115,14 +118,14 @@ int amdisplay_utils_get_size_fb2(int *width, int *height)
 
 int amdisplay_utils_set_scale_mode(int scale_wx, int scale_hx)
 {
-    int width, height;
-    int ret;
-    int neww, newh;
+    //int width, height;
+    int ret = -1;
+    //int neww, newh;
     char buf[40];
 
     /*scale mode only support x2,x1*/
     if ((scale_wx != 1 && scale_wx != 2) || (scale_hx != 1 && scale_hx != 2)) {
-        LOGI("unsupport scaling mode,x1,x2 only\n", scale_wx, scale_hx);
+        LOGI("unsupport scaling mode,x1,x2 only\n");
         return -1;
     }
 

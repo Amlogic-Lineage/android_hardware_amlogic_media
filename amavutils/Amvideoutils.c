@@ -50,9 +50,9 @@
 #define WINDOW_AXIS_PATH_FB1       "/sys/class/graphics/fb1/window_axis"
 #define FREE_SCALE_AXIS_PATH_FB1   "/sys/class/graphics/fb1/free_scale_axis"
 
-static int rotation = 0;
-static int disp_width = 1920;
-static int disp_height = 1080;
+//static int rotation = 0;
+//static int disp_width = 1920;
+//static int disp_height = 1080;
 
 #ifndef LOGD
 #define LOGV ALOGV
@@ -356,7 +356,7 @@ int get_device_win(OSD_DISP_MODE dismod, int *x, int *y, int *w, int *h)
 
 void get_axis(const char *path, int *x, int *y, int *w, int *h)
 {
-    int fd = -1;
+    //int fd = -1;
     char buf[SYSCMD_BUFSIZE];
     if (amsysfs_get_sysfs_str(path, buf, sizeof(buf)) == 0) {
         if (sscanf(buf, "%d %d %d %d", x, y, w, h) == 4) {
@@ -403,11 +403,11 @@ void amvideo_setscreenmode()
 
     float wh_ratio = 0;
     float ratio4_3 = 1.3333;
-    float ratio16_9 = 1.7778;
+    //float ratio16_9 = 1.7778;
     float offset = 0.2;
     char val[PROPERTY_VALUE_MAX];
     memset(val, 0, sizeof(val));
-    int enable_fullscreen = 1;
+    //int enable_fullscreen = 1;
     int default_screen_mode = -1;
 
     /*if(x<0 || y<0)
@@ -474,10 +474,10 @@ int amvideo_utils_set_virtual_position(int32_t x, int32_t y, int32_t w, int32_t 
     int dev_w, dev_h, disp_w, disp_h, video_global_offset;
     int dst_x, dst_y, dst_w, dst_h;
     char buf[SYSCMD_BUFSIZE];
-    int angle_fd = -1;
+    //int angle_fd = -1;
     int ret = -1;
     int axis[4];
-    char enable_p2p_play[8] = {0};
+    //char enable_p2p_play[8] = {0};
     int video_on_vpp2_new = is_osd_on_vpp2_new();
     int screen_portrait = is_screen_portrait();
     int video_on_vpp2 = is_video_on_vpp2();
@@ -761,7 +761,7 @@ int amvideo_utils_set_virtual_position(int32_t x, int32_t y, int32_t w, int32_t 
         } else {
             int x = 0, y = 0, w = 0, h = 0;
             int fb_w = 0, fb_h = 0;
-            int req_2xscale = 0;
+            //int req_2xscale = 0;
 
             memset(val, 0, sizeof(val));
             if (amsysfs_get_sysfs_str(PPSCALER_RECT, val, sizeof(val)) == 0) {

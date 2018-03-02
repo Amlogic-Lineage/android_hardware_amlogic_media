@@ -204,7 +204,7 @@ int media_control(int fd, int cmd, unsigned long paramter)
     }
     r = ioctl(fd, cmd, paramter);
     if (r < 0) {
-        CTRL_PRINT("send control failed,handle=%d,cmd=%x,paramter=%x, t=%x errno=%d\n", fd, cmd, paramter, r, errno);
+        CTRL_PRINT("send control failed,handle=%d,cmd=%x,paramter=%lx, t=%x errno=%d\n", fd, cmd, paramter, r, errno);
         return r;
     }
     return 0;
@@ -257,7 +257,7 @@ int media_vfm_set_ulong(int cmd, unsigned long para)
 
 int media_set_vfm_map_str(const char* val)
 {
-    int fd,res;
+    //int fd,res;
     struct vfmctl setvfmctl;
     if (val == NULL)
         return -1;
@@ -268,7 +268,7 @@ int media_set_vfm_map_str(const char* val)
 
 int media_get_vfm_map_str(char* val,int size)
 {
-    int fd,res,len;
+    int len;
     struct vfmctl setvfmctl;
     if (val == NULL)
         return -1;
@@ -285,7 +285,7 @@ int media_get_vfm_map_str(char* val,int size)
 
 int media_rm_vfm_map_str(const char* name,const char* val)
 {
-    int fd,res;
+    //int fd,res;
     struct vfmctl setvfmctl;
     if (val == NULL || name == NULL)
         return -1;
@@ -297,7 +297,7 @@ int media_rm_vfm_map_str(const char* name,const char* val)
 
 int media_add_vfm_map_str(const char* name,const char* val)
 {
-    int fd,res;
+    //int fd,res;
     struct vfmctl setvfmctl;
     if (val == NULL || name == NULL)
         return -1;

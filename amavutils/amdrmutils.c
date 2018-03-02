@@ -136,7 +136,7 @@ int tvp_mm_enable(int flags)
 
 }
 
-int tvp_mm_disable(int flags)
+int tvp_mm_disable(int flags __unused)
 {
     set_disable_video(0);
     free_keep_buffer();
@@ -151,7 +151,7 @@ int tvp_mm_get_mem_region(struct tvp_region* region, int region_size)
     int fd, len;
     char buf[BUF_LEN];
     uint32_t n=0, i=0, rnum = 0, siz;
-    uint64_t start=0, end=0;
+    uint32_t start=0, end=0;
 
     //rnum = min(region_size/sizeof(struct tvp_region), MAX_REGION);
     rnum = region_size/sizeof(struct tvp_region);
@@ -172,15 +172,15 @@ int tvp_mm_get_mem_region(struct tvp_region* region, int region_size)
     }
 #endif
 
-    fd = open(TVP_REGION_PATH, O_RDONLY, 0644);
+    fd = open(TVP_REGION_PATH, O_RDONLY);
     if (fd >= 0) {
         len = read(fd, buf, BUF_LEN);
         close(fd);
-        for (i=0,n=0; (n < len) && (i < rnum); i++, region++) {
-            if (4 == sscanf(buf+n, "segment%d:%llx - %llx (size:%x)",
+        for (i=0,n=0; ((int)n < len) && (i < rnum); i++, region++) {
+            if (4 == sscanf(buf+n, "segment%d:%x - %x (size:%x)",
                     &i, &start, &end, &siz))
             {
-                ALOGE("segment %d: [%llx-%llx]\n", i, start, end);
+                ALOGE("segment %d: [%x-%x]\n", i, start, end);
                 region->start = start;
                 region->end = end;
                 region->mem_flags = 0;

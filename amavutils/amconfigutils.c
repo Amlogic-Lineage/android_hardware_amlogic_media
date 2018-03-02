@@ -67,7 +67,7 @@ static int get_matched_index(const char * path)
     }
     return -10;
 }
-static int get_unused_index(const char * path)
+static int get_unused_index(const char * path __unused)
 {
     int i;
     for (i = 0; i < MAX_CONFIG; i++) {
@@ -119,7 +119,7 @@ int am_setconfig(const char * path, const char *val)
 {
     int i;
     char **pppath, *pconfig;
-    char value[CONFIG_VALUE_MAX];
+    //char value[CONFIG_VALUE_MAX];
     char *setval = NULL;
     int ret = -1;
     if (!amconfig_inited) {

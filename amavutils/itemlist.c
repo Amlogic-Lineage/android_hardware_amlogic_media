@@ -192,11 +192,12 @@ struct item *  itemlist_find_match_item(struct itemlist *itemlist, unsigned long
 we think the item->data is grow,
 we find the first item great or equal  item->data;
 */
-struct item *  itemlist_find_match_item_ex(struct itemlist *itemlist, struct item *tomatch, item_is_match_fun match, int reveser) {
-    struct item *item = NULL;
-    struct list_head *llist, *tmplist;
+struct item *  itemlist_find_match_item_ex(struct itemlist *itemlist, struct item *tomatch __unused, item_is_match_fun match __unused, int reveser __unused) {
+    //struct item *item = NULL;
+    //struct list_head *llist, *tmplist;
     struct item *finditem = NULL;
     ITEM_LOCK(itemlist);
+    /*
     if (reveser) {
         list_for_each_entry_reverse(item, &itemlist->list, list) {
             if (match(item, tomatch)) {
@@ -212,6 +213,7 @@ struct item *  itemlist_find_match_item_ex(struct itemlist *itemlist, struct ite
             }
         }
     }
+    */
 
     ITEM_UNLOCK(itemlist);
     return finditem;
