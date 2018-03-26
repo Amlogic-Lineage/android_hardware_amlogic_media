@@ -4,11 +4,6 @@
  *  Copyright (C) 1999-2012 the contributors
  *
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
  *  Alternatively you can redistribute this file under the terms of the
  *  BSD license as stated below:
  *
