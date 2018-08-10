@@ -17,7 +17,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
-
+#include <unistd.h>
 
 static struct itemlist threadpool_list;
 static struct itemlist threadpool_threadlist;
