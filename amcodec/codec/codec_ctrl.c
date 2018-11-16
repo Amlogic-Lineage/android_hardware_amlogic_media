@@ -55,9 +55,9 @@
 
 int codec_set_eos(codec_para_t *pcodec, int is_eos) {
     int r = codec_h_ioctl(pcodec->handle, AMSTREAM_IOC_SET, AMSTREAM_SET_EOS, is_eos);
-    //if (r < 0) {
-    //    return system_error_to_codec_error(r);
-    //}
+    if (r < 0) {
+        return r;
+    }
     CODEC_PRINT("codec_set_eos is_eos =%d\n", is_eos);
     return 0;
 }
@@ -988,7 +988,7 @@ void codec_resume_audio(codec_para_t *pcodec, unsigned int orig)
 /* --------------------------------------------------------------------------*/
 int codec_checkin_pts(codec_para_t *pcodec, unsigned long pts)
 {
-    //CODEC_PRINT("[%s:%d]pts=%x(%d)\n",__FUNCTION__,__LINE__,pts,pts/90000);
+    CODEC_PRINT("[%s:%d]pts=%lx(%ld)\n",__FUNCTION__,__LINE__,pts,pts/90000);
     return codec_h_ioctl(pcodec->handle, AMSTREAM_IOC_SET, AMSTREAM_SET_TSTAMP, pts);
 }
 
@@ -1865,7 +1865,6 @@ int codec_get_pcrscr(codec_para_t *pcodec)
 /* --------------------------------------------------------------------------*/
 int codec_set_pcrscr(codec_para_t *pcodec, int val)
 {
-    unsigned int pcrscr;
     int ret;
 
     if (!pcodec) {
@@ -2075,7 +2074,6 @@ int codec_get_sub_num(codec_para_t *pcodec)
 int codec_get_sub_info(codec_para_t *pcodec, subtitle_info_t *sub_info)
 {
     int ret = 0;
-    int i;
     if (!sub_info) {
         CODEC_PRINT("[codec_get_sub_info] error, NULL pointer!\n");
         ret = CODEC_ERROR_INVAL;
@@ -2441,7 +2439,10 @@ int codec_get_last_checkin_apts(codec_para_t* pcodec, unsigned long* apts)
 
 int codec_get_pcm_level(codec_para_t* pcodec, unsigned int* level)
 {
-    return audio_get_pcm_level(pcodec->adec_priv);
+    unsigned le;
+    le = audio_get_pcm_level(pcodec->adec_priv);
+    *level = le;
+    return le;
 }
 
 int codec_set_skip_bytes(codec_para_t* pcodec, unsigned int bytes)
@@ -2451,7 +2452,10 @@ int codec_set_skip_bytes(codec_para_t* pcodec, unsigned int bytes)
 
 int codec_get_dsp_apts(codec_para_t* pcodec, unsigned int * apts)
 {
-    return audio_get_pts(pcodec->adec_priv);
+    unsigned int ap;
+    ap = audio_get_pts(pcodec->adec_priv);
+    *apts = ap;
+    return ap;
 }
 
 /* --------------------------------------------------------------------------*/
@@ -2492,7 +2496,7 @@ int codec_get_cntl_vpts(codec_para_t *pcodec)
 /* --------------------------------------------------------------------------*/
 int codec_disalbe_slowsync(codec_para_t *pcodec, int disable_slowsync)
 {
-    int cntl_vpts, r;
+    int r;
 
     if (pcodec->cntl_handle == 0) {
         CODEC_PRINT("no control handler\n");

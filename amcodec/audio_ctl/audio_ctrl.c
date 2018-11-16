@@ -137,7 +137,10 @@ int codec_set_mute(codec_para_t *p, int mute)
 /* --------------------------------------------------------------------------*/
 int codec_get_volume_range(codec_para_t *p, int *min, int *max)
 {
-    return -CODEC_ERROR_IO;
+    if (p != NULL && min != NULL && max != NULL)
+        return -CODEC_ERROR_IO;
+
+    return -CODEC_ERROR_PARAMETER;
 }
 
 /* --------------------------------------------------------------------------*/
@@ -289,7 +292,12 @@ int codec_get_lrvolume(codec_para_t *p, float *lvol, float* rvol)
 /* --------------------------------------------------------------------------*/
 int codec_set_volume_balance(codec_para_t *p, int balance)
 {
-    return -CODEC_ERROR_IO;
+    int bl;
+    if (p != NULL) {
+       bl = balance;
+       return -CODEC_ERROR_IO;
+    }
+    return -CODEC_ERROR_PARAMETER;
 }
 
 /* --------------------------------------------------------------------------*/
@@ -410,7 +418,8 @@ int codec_audio_spectrum_switch(codec_para_t *p, int isStart, int interval)
 {
     int  ret = -1;
     char cmd[32];
-
+    if (p == NULL)
+        return -CODEC_ERROR_PARAMETER;
     if (isStart == 1) {
         snprintf(cmd, 32, "spectrumon:%d", interval);
         //ret=amadec_cmd(cmd);
