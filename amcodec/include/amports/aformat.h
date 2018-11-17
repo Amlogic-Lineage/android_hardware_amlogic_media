@@ -11,7 +11,7 @@
 /**
 * @file aformat.h
 * @brief  Porting from decoder driver for audio format
-* @author Tim Yao <timyao@amlogic.com>
+* 
 * @version 1.0.0
 * @date 2011-02-24
 */

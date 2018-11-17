@@ -11,7 +11,7 @@
 /**
 * @file codec_type.h
 * @brief  Definitions of codec type and structures
-* @author Zhang Chen <chen.zhang@amlogic.com>
+* 
 * @version 1.0.0
 * @date 2011-02-24
 */

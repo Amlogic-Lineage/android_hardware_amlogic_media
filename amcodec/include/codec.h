@@ -11,7 +11,7 @@
 /**
 * @file codec.h
 * @brief  Function prototypes of codec lib
-* @author Zhang Chen <chen.zhang@amlogic.com>
+* 
 * @version 1.0.0
 * @date 2011-02-24
 */

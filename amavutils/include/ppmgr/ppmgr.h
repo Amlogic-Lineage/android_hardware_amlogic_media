@@ -11,7 +11,7 @@
 /**
 * @file ppmgr.h
 * @brief  Porting from ppmgr driver for codec ioctl commands
-* @author Tim Yao <timyao@amlogic.com>
+* 
 * @version 1.0.0
 * @date 2011-02-24
 */

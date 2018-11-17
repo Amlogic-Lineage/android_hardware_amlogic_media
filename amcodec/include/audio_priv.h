@@ -11,7 +11,7 @@
 /**
 * @file audio_priv.h
 * @brief  Funtion prototypes of audio lib
-* @author Zhang Chen <chen.zhang@amlogic.com>
+* 
 * @version 1.0.0
 * @date 2011-02-24
 */

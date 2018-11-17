@@ -11,7 +11,7 @@
 /**
 * @file codec_msg.h
 * @brief  Function prototype of codec error
-* @author Zhang Chen <chen.zhang@amlogic.com>
+* 
 * @version 1.0.0
 * @date 2011-02-24
 */
