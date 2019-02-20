@@ -47,6 +47,7 @@
 // ports
 #define CODEC_VIDEO_ES_DEVICE		"/dev/amstream_vbuf"
 #define CODEC_VIDEO_ES_DEVICE_SCHED	"/dev/amstream_vbuf_sched"
+#define CODEC_VIDEO_ES_HEVC_DEVICE_SCHED	"/dev/amstream_hevc_sched"
 #define CODEC_TS_DEVICE			"/dev/amstream_mpts"
 #define CODEC_PS_DEVICE			"/dev/amstream_mpps"
 #define CODEC_RM_DEVICE			"/dev/amstream_rm"
@@ -573,16 +574,19 @@ int vcodec_get_vbuf_state(vcodec_para_t *p, struct buf_status *buf)
 * @brief  vcodec_video_es_init  Initialize the codec device for es video
 *
 * @param[in]  pcodec  Pointer of codec parameter structure
+*             sched   Chose single mode device or stream mode device
 *
 * @return     Success or fail error type
 */
 /* --------------------------------------------------------------------------*/
-static inline int vcodec_video_es_init(vcodec_para_t *pcodec)
+static inline int vcodec_video_es_init(vcodec_para_t *pcodec, int sched)
 {
     int handle;
     int r;
     int codec_r;
     int flags = O_WRONLY;
+    char *amstream_vdec_dev = CODEC_VIDEO_ES_DEVICE;
+    char *amstream_hevc_dev = CODEC_VIDEO_HEVC_DEVICE;
 
     if (!pcodec->has_video) {
         return CODEC_ERROR_NONE;
@@ -590,18 +594,27 @@ static inline int vcodec_video_es_init(vcodec_para_t *pcodec)
 
     flags |= pcodec->noblock ? O_NONBLOCK : 0;
 
+    if (sched) {
+        amstream_vdec_dev = CODEC_VIDEO_ES_DEVICE_SCHED;
+        amstream_hevc_dev = CODEC_VIDEO_ES_HEVC_DEVICE_SCHED;
+    }
+
     if (pcodec->video_type == VFORMAT_HEVC || pcodec->video_type == VFORMAT_VP9 ||
         pcodec->video_type == VFORMAT_AVS2) {
         if (pcodec->dv_enable && pcodec->video_type == VFORMAT_HEVC)
             handle = vcodec_h_open(CODEC_VIDEO_DVHEVC_DEVICE, flags);
         else
-            handle = vcodec_h_open(CODEC_VIDEO_HEVC_DEVICE, flags);
+            handle = vcodec_h_open(amstream_hevc_dev, flags);
     } else {
         if (pcodec->video_type == VFORMAT_H264 && pcodec->dv_enable)
             handle = vcodec_h_open(CODEC_VIDEO_DVAVC_DEVICE, flags);
+        else if ((pcodec->video_type == VFORMAT_H264) ||
+                 (pcodec->video_type == VFORMAT_MPEG12) ||
+                 (pcodec->video_type == VFORMAT_MPEG4) ||
+                 (pcodec->video_type == VFORMAT_MJPEG))
+            handle = vcodec_h_open(amstream_vdec_dev, flags);
         else
-            //handle = vcodec_h_open(CODEC_VIDEO_ES_DEVICE, flags);
-            handle = vcodec_h_open(CODEC_VIDEO_ES_DEVICE_SCHED, flags);
+            handle = vcodec_h_open(CODEC_VIDEO_ES_DEVICE, flags);
     }
     if (handle < 0) {
         return CODEC_OPEN_HANDLE_FAILED;
@@ -652,7 +665,7 @@ int vcodec_init(vcodec_para_t *pcodec)
 
     switch (pcodec->stream_type) {
     case STREAM_TYPE_ES_VIDEO:
-        ret = vcodec_video_es_init(pcodec);
+        ret = vcodec_video_es_init(pcodec, 1);
         break;
 
     case STREAM_TYPE_UNKNOW:
