@@ -26,11 +26,16 @@ extern "C" {
 
 int media_set_ctl(const char * path,int setval)
 {
+    int ret = 0;
     char val[32];
     CTRL_PRINT("set %s =%d\n",path,setval);
     sprintf(val, "%d", setval);
-    media_set_cmd_str(path, val);
-    return 0;
+    ret = media_set_cmd_str(path, val);
+    if (ret)
+    {
+        ret = UnSupport;/*if fail we also return unsupport then will use open sysfs to read*/
+    }
+    return ret;
 }
 
 int media_get_ctl(const char * path)
@@ -52,9 +57,15 @@ int media_get_ctl(const char * path)
 }
 
 int media_set_ctl_str(const char * path,char* setval)
-{   CTRL_PRINT("setstr %s =%s\n",path,setval);
-    media_set_cmd_str(path, setval);
-    return 0;
+{
+   int ret = 0;
+   CTRL_PRINT("setstr %s =%s\n",path,setval);
+   ret = media_set_cmd_str(path, setval);
+   if (ret)
+   {
+       ret = UnSupport;/*if fail we also return unsupport then will use open sysfs to read*/
+   }
+    return ret;
 }
 
 int media_get_ctl_str(const char * path, char* buf, int size)
@@ -72,11 +83,12 @@ int media_get_ctl_str(const char * path, char* buf, int size)
 
 int media_sync_set_ctl(const char * path,int setval)
 {
+    int ret = 0;
     char val[32];
     CTRL_PRINT("set %s =%d\n",path,setval);
     sprintf(val, "%d", setval);
-    media_sync_set_cmd_str(path, val);
-	return 0;
+    ret = media_sync_set_cmd_str(path, val);
+    return ret;
 }
 
 int media_sync_get_ctl(const char * path)
@@ -94,8 +106,7 @@ int media_sync_get_ctl(const char * path)
 
 int media_sync_set_ctl_str(const char * path,char* setval)
 {
-    media_sync_set_cmd_str(path, setval);
-    return 0;
+    return  media_sync_set_cmd_str(path, setval);
 }
 
 int media_sync_get_ctl_str(const char * path, char* buf, int size)
@@ -107,11 +118,12 @@ int media_sync_get_ctl_str(const char * path, char* buf, int size)
 
 int media_video_set_ctl(const char * path,int setval)
 {
+    int ret = 0;
     char val[32];
     CTRL_PRINT("set %s =%d\n",path,setval);
     sprintf(val, "%d", setval);
-    media_video_set_cmd_str(path, val);
-	return 0;
+    ret = media_video_set_cmd_str(path, val);
+    return ret;
 }
 
 int media_video_get_ctl(const char * path)
@@ -309,8 +321,7 @@ int media_add_vfm_map_str(const char* name,const char* val)
 
 int media_codec_mm_set_ctl_str(const char * path,char* setval)
 {
-    media_codecmm_set_cmd_str(path, setval);
-    return 0;
+    return media_codecmm_set_cmd_str(path, setval);
 }
 
 int media_codec_mm_get_ctl_str(const char * path, char* buf, int size)
