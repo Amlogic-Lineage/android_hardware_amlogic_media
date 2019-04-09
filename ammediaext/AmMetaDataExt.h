@@ -88,6 +88,7 @@ enum {
     kKey4kOSD		  = '4OSD', // bool (int32_t)
     KKeyIsDV		  = 'isDV', // bool (int32_t)
     kKeyIsFLV		  = 'isFV', // bool (int32_t)
+    kKeyIsAVI	          = 'iAVI', // bool (int32_t)
 
     kKeyBlockAlign	  = 'bagn',
     kKeyAudioFlag	  ='aufg',	// audio info reported from decoder to indicate special info

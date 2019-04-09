@@ -55,6 +55,7 @@ typedef enum OMX_VENDOR_INDEXEXTTYPE {
 
     OMX_IndexParamLowLatencyMode = OMX_IndexVendorStartUnused + 0x00200000,                  /* add by aml */
     OMX_IndexParam4kosd,                           /* add by aml */
+    OMX_IndexParamUnstablePTS,                     /* add by aml */
 } OMX_VENDOR_INDEXEXTTYPE;
 
 typedef struct OMX_AUDIO_PARAM_DOLBYAUDIOTYPE {
