@@ -163,7 +163,6 @@ int main(int argc, char *argv[])
     }
     osd_blank("/sys/class/graphics/fb0/osd_display_debug", 1);
     osd_blank("/sys/class/graphics/fb0/blank", 1);
-    osd_blank("/sys/class/graphics/fb1/blank", 0);
     set_display_axis(0);
 
     vpcodec = &v_codec_para;
