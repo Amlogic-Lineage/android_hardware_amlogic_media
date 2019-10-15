@@ -68,6 +68,9 @@ int codec_get_vbuf_state(codec_para_t *, struct buf_status *);
 int codec_get_abuf_state(codec_para_t *, struct buf_status *);
 int codec_get_vdec_state(codec_para_t *, struct vdec_status *);
 int codec_get_adec_state(codec_para_t *, struct adec_status *);
+int codec_get_av_param_info(codec_para_t *p, struct av_param_info_t *av_param_info);
+int codec_get_av_param_qosinfo(codec_para_t *p, struct av_param_qosinfo_t *av_param_qosinfo);
+
 
 int codec_pause(codec_para_t *);
 int codec_resume(codec_para_t *);
@@ -138,4 +141,5 @@ int codec_utils_set_video_position(int x, int y, int w, int h, int rotation);
 int codec_amsub_read_outdata(codec_para_t *pcodec,amsub_info_t *amsub_info);
 void codec_close_subtitle(codec_para_t *pcodec);
 void codec_resume_subtitle(codec_para_t *pcodec, unsigned int has_sub);
+int codec_get_audio_basic_info(codec_para_t *pcodec);
 #endif

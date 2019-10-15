@@ -40,6 +40,12 @@ typedef enum {
     STREAM_TYPE_RM,
 } stream_type_t;
 
+typedef enum {
+    STREAM_TYPE_SINGLE = 0,
+    STREAM_TYPE_FRAME,
+    STREAM_TYPE_STREAM,
+} dec_mode_t;
+
 typedef struct {
     unsigned int    format;  ///< video format, such as H264, MPEG2...
     unsigned int    width;   ///< video source width
@@ -61,6 +67,9 @@ typedef struct {
     int block_align;         ///< audio block align from ffmpeg
     int extradata_size;      ///< extra data size
     char extradata[AUDIO_EXTRA_DATA_SIZE];;   ///< extra data information for decoder
+    int error_num;
+    int decoded_nb_frames;
+    int dropped_nb_frames;
 } audio_info_t;
 
 typedef struct {
@@ -112,9 +121,13 @@ unsigned int dv_enable:
     int switch_audio_flag;      //<switch audio flag switching(1) else(0)
     int automute_flag;
     char *sub_filename;
+    int localplay_flag;
+    int player_id;
+    int start_no_out;
     int associate_dec_supported;//support associate or not
     int mixing_level;
     unsigned int drmmode;
+    dec_mode_t dec_mode;
 } codec_para_t;
 
 typedef struct {
@@ -146,10 +159,15 @@ typedef struct {
     int droppcm_flag;               // drop pcm flag, if switch audio (1)
     int automute;
     unsigned int has_video;
+    int localplay_flag;
+    int player_id;
     int associate_dec_supported;//support associate or not
     int mixing_level;
+    int start_no_out;
+    int error_num;
+    int decoded_nb_frames;
+    int dropped_nb_frames;
 } arm_audio_info;
-
 
 typedef struct {
     int sub_type;

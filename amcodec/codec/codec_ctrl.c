@@ -367,13 +367,6 @@ static inline int codec_video_es_init(codec_para_t *pcodec)
         print_error_msg(codec_r, errno, __FUNCTION__, __LINE__);
         return codec_r;
     }
-    r = codec_set_drmmode(pcodec, pcodec->drmmode);
-    if (r < 0) {
-        codec_h_close(handle);
-        codec_r = system_error_to_codec_error(r);
-        print_error_msg(codec_r, errno, __FUNCTION__, __LINE__);
-        return codec_r;
-    }
     return CODEC_ERROR_NONE;
 }
 
@@ -1098,6 +1091,52 @@ int codec_get_adec_state(codec_para_t *p, struct adec_status *adec)
             memcpy(adec, &am_io.astatus, sizeof(*adec));
         }
 
+    }
+    return system_error_to_codec_error(r);
+}
+/* --------------------------------------------------------------------------*/
+/**
+* @brief  codec_get_av_param_info  Get the av info by codec device
+*
+* @param[in]   p     Pointer of codec parameter structure
+* @param[out] av_param_info       av info
+*
+* @return      Success or fail type
+*/
+/* --------------------------------------------------------------------------*/
+int codec_get_av_param_info(codec_para_t *p, struct av_param_info_t *av_param_info)
+{
+    int r;
+    if (av_param_info == NULL) {
+        CODEC_PRINT("[codec_get_av_param_info] NULL Pointer\n");
+        return -1;
+    }
+    r = codec_h_control(p->handle, AMSTREAM_IOC_GET_AVINFO, (unsigned long)av_param_info);
+    if (r < 0) {
+        CODEC_PRINT("[codec_get_av_param_info]error[%d]: %s\n", r, codec_error_msg(system_error_to_codec_error(r)));
+    }
+    return system_error_to_codec_error(r);
+}
+/* --------------------------------------------------------------------------*/
+/**
+* @brief  codec_get_av_param_qosinfo  Get the av info by codec device
+*
+* @param[in]   p     Pointer of codec parameter structure
+* @param[out] av_param_qosinfo       av qosinfo
+*
+* @return      Success or fail type
+*/
+/* --------------------------------------------------------------------------*/
+int codec_get_av_param_qosinfo(codec_para_t *p, struct av_param_qosinfo_t *av_param_qosinfo)
+{
+    int r;
+    if (av_param_qosinfo == NULL) {
+        CODEC_PRINT("[codec_get_av_param_info] NULL Pointer\n");
+        return -1;
+    }
+    r = codec_h_control(p->handle, AMSTREAM_IOC_GET_QOSINFO, (unsigned long)av_param_qosinfo);
+    if (r < 0) {
+        CODEC_PRINT("[codec_get_av_param_info]error[%d]: %s\n", r, codec_error_msg(system_error_to_codec_error(r)));
     }
     return system_error_to_codec_error(r);
 }
@@ -2326,6 +2365,20 @@ int codec_get_audio_cur_delay_ms(codec_para_t *pcodec, int *delay_ms)
 }
 
 
+int codec_get_audio_basic_info(codec_para_t *pcodec)
+{
+    if (pcodec->has_audio) {
+        arm_audio_info a_ainfo;
+        memset(&a_ainfo, 0, sizeof(arm_audio_info));
+        audio_get_basic_info(pcodec->adec_priv, &a_ainfo);
+        pcodec->audio_info.channels = a_ainfo.channels;
+        pcodec->audio_info.sample_rate = a_ainfo.sample_rate;
+        pcodec->audio_info.error_num = a_ainfo.error_num;
+        pcodec->audio_info.decoded_nb_frames = audio_get_decoded_nb_frames(pcodec->adec_priv);
+    }
+
+   return 0;
+}
 
 /* --------------------------------------------------------------------------*/
 /**

@@ -7,6 +7,8 @@ LOCAL_SRC_FILES := \
 	codec/codec_ctrl.c \
 	codec/codec_h_ctrl.c \
 	codec/codec_msg.c \
+	codec/codec_info.c \
+	codec/codec_videoinfo.c \
 	audio_ctl/audio_ctrl.c
 
 LOCAL_C_INCLUDES := \
@@ -41,7 +43,10 @@ LOCAL_SRC_FILES := \
 	codec/codec_ctrl.c \
 	codec/codec_h_ctrl.c \
 	codec/codec_msg.c \
+	codec/codec_info.c \
+	codec/codec_videoinfo.c \
 	audio_ctl/audio_ctrl.c
+
 
 LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)/include \

@@ -50,7 +50,8 @@ typedef enum {
     VIDEO_DEC_FORMAT_AVS,
     VIDEO_DEC_FORMAT_H264_4K2K,
     VIDEO_DEC_FORMAT_HEVC,
-    VIDEO_DEC_FORMAT_VP9 ,
+    VIDEO_DEC_FORMAT_VP9,
+    VIDEO_DEC_FORMAT_AVS2,
     VIDEO_DEC_FORMAT_MAX
 } vdec_type_t;
 
@@ -72,10 +73,8 @@ typedef enum {
     VFORMAT_JPEG_ENC,
     VFORMAT_VP9,
     VFORMAT_AVS2,
-
-/*add new here before.*/
-    VFORMAT_MAX,
-    VFORMAT_UNSUPPORT = VFORMAT_MAX
+    VFORMAT_UNSUPPORT,
+    VFORMAT_MAX
 } vformat_t;
 
 #define IS_VFMT_VALID(vfmt) ((vfmt > VFORMAT_UNKNOWN) && (vfmt < VFORMAT_MAX))
