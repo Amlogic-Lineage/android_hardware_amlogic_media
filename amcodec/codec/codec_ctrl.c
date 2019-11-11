@@ -332,18 +332,60 @@ static inline int codec_video_es_init(codec_para_t *pcodec)
     }
 
     flags |= pcodec->noblock ? O_NONBLOCK : 0;
-
-    if (pcodec->video_type == VFORMAT_HEVC || pcodec->video_type == VFORMAT_VP9) {
-        if (pcodec->dv_enable && pcodec->video_type == VFORMAT_HEVC)
+    if (pcodec->dv_enable) {
+        if (pcodec->video_type == VFORMAT_HEVC) {
             handle = codec_h_open(CODEC_VIDEO_DVHEVC_DEVICE, flags);
-        else
-            handle = codec_h_open(CODEC_VIDEO_HEVC_DEVICE, flags);
-    } else {
-        if (pcodec->video_type == VFORMAT_H264 && pcodec->dv_enable)
+        } else if (pcodec->video_type == VFORMAT_H264) {
             handle = codec_h_open(CODEC_VIDEO_DVAVC_DEVICE, flags);
-        else
-            handle = codec_h_open(CODEC_VIDEO_ES_DEVICE, flags);
+        } else if (pcodec->video_type == VFORMAT_VP9) {
+            handle = codec_h_open(CODEC_VIDEO_HEVC_DEVICE, flags);
+        } else {
+            handle = codec_h_open(CODEC_VIDEO_ES_SCHED_DEVICE, flags);
+        }
+    } else {
+        switch (pcodec->dec_mode) {
+            case STREAM_TYPE_SINGLE:
+                if (pcodec->video_type == VFORMAT_HEVC
+                    || pcodec->video_type == VFORMAT_VP9
+                    || pcodec->video_type == VFORMAT_AVS2) {
+                    handle = codec_h_open(CODEC_VIDEO_HEVC_DEVICE, flags);
+                } else {
+                    handle = codec_h_open(CODEC_VIDEO_ES_DEVICE, flags);
+                }
+                break;
+            case STREAM_TYPE_FRAME:
+                /* [SE][BUG][BUG-168554][chengshun.wang]  AVS2 use hevc device*/
+                if (pcodec->video_type == VFORMAT_HEVC
+                    || pcodec->video_type == VFORMAT_VP9
+                    || pcodec->video_type == VFORMAT_AVS2) {
+                    handle = codec_h_open(CODEC_VIDEO_HEVC_FRAME, flags);
+                } else {
+                    handle = codec_h_open(CODEC_VIDEO_ES_FRAME, flags);
+                }
+                break;
+            case STREAM_TYPE_STREAM:
+                /* [SE][BUG][BUG-168554][chengshun.wang]  AVS2 use hevc device*/
+                if (pcodec->video_type == VFORMAT_HEVC
+                    || pcodec->video_type == VFORMAT_VP9
+                    || pcodec->video_type == VFORMAT_AVS2) {
+                    handle = codec_h_open(CODEC_VIDEO_HEVC_SCHED_DEVICE, flags);
+                } else {
+                    handle = codec_h_open(CODEC_VIDEO_ES_SCHED_DEVICE, flags);
+                }
+                break;
+            default:
+                /* [SE][BUG][BUG-168554][chengshun.wang]  AVS2 use hevc device*/
+                if (pcodec->video_type == VFORMAT_HEVC
+                    || pcodec->video_type == VFORMAT_VP9
+                    || pcodec->video_type == VFORMAT_AVS2) {
+                    handle = codec_h_open(CODEC_VIDEO_HEVC_DEVICE, flags);
+                } else {
+                    handle = codec_h_open(CODEC_VIDEO_ES_DEVICE, flags);
+                }
+                break;
+        }
     }
+
     if (handle < 0) {
         codec_r = system_error_to_codec_error(handle);
         print_error_msg(codec_r, errno, __FUNCTION__, __LINE__);
@@ -2376,7 +2418,6 @@ int codec_get_audio_basic_info(codec_para_t *pcodec)
         pcodec->audio_info.error_num = a_ainfo.error_num;
         pcodec->audio_info.decoded_nb_frames = audio_get_decoded_nb_frames(pcodec->adec_priv);
     }
-
    return 0;
 }
 

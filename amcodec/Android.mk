@@ -1,7 +1,13 @@
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
+USE_AMADEC_CTC := 1
+
+ifeq ($(USE_AMADEC_CTC), 1)
+AMADEC_PATH:=$(TOP)/hardware/amlogic/LibAudio/amadec_ctc/
+else
 AMADEC_PATH:=$(TOP)/hardware/amlogic/LibAudio/amadec/
+endif
 
 LOCAL_SRC_FILES := \
 	codec/codec_ctrl.c \
@@ -25,7 +31,11 @@ endif
 
 LOCAL_CFLAGS += -Werror -Wformat -Wimplicit-function-declaration
 LOCAL_ARM_MODE := arm
+ifeq ($(USE_AMADEC_CTC), 1)
+LOCAL_STATIC_LIBRARIES := libamadec_ctc_static
+else
 LOCAL_STATIC_LIBRARIES := libamadec
+endif
 LOCAL_MODULE:= libamcodec
 
 ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 26 && echo OK),OK)
@@ -70,9 +80,16 @@ LOCAL_SHARED_LIBRARIES := \
 	liblog
 
 ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 28 && echo OK),OK)
+
+ifeq ($(USE_AMADEC_CTC), 1)
+LOCAL_SHARED_LIBRARIES += \
+	libamavutils_sys \
+	libamadec_ctc
+else
 LOCAL_SHARED_LIBRARIES += \
 	libamavutils_sys \
 	libamadec_system
+endif
 else
 LOCAL_SHARED_LIBRARIES += \
 	libamavutils \

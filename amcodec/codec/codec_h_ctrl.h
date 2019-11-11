@@ -55,7 +55,11 @@
 #define CODEC_VIDEO_DVAVC_DEVICE    "/dev/amstream_dves_avc"
 #define CODEC_VIDEO_DVHEVC_DEVICE   "/dev/amstream_dves_hevc"
 
-
+#define CODEC_VIDEO_ES_SCHED_DEVICE     "/dev/amstream_vbuf_sched"  // support multi instance
+#define CODEC_VIDEO_HEVC_SCHED_DEVICE   "/dev/amstream_hevc_sched"
+#define CODEC_TS_SCHED_DEVICE           "/dev/amstream_mpts_sched"
+#define CODEC_VIDEO_ES_FRAME       		"/dev/amstream_vframe"
+#define CODEC_VIDEO_HEVC_FRAME     		"/dev/amstream_hevc_frame"
 
 CODEC_HANDLE codec_h_open(const char *port_addr, int flags);
 int codec_h_close(CODEC_HANDLE h);
