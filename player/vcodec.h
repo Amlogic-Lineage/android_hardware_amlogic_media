@@ -164,6 +164,13 @@ struct vdec_status {
     unsigned int status;
 };
 
+struct usr_crc_info_t {
+    unsigned int id;
+    unsigned int pic_num;
+    unsigned int y_crc;
+    unsigned int uv_crc;
+};
+
 // codec api
 int vcodec_init(vcodec_para_t *);
 int vcodec_close(vcodec_para_t *);
@@ -175,5 +182,8 @@ int vcodec_read(vcodec_para_t *pcodec, void *buffer, int len);
 int vcodec_pause(vcodec_para_t *);
 int vcodec_resume(vcodec_para_t *);
 int vcodec_get_vbuf_state(vcodec_para_t *p, struct buf_status *buf);
+int vcodec_set_frame_cmp_crc(vcodec_para_t *vcodec, const int *crc, int size);
+int vcodec_get_crc_check_result(vcodec_para_t *vcodec, int vdec_id);
+int is_crc_cmp_ongoing(vcodec_para_t *vcodec, int vdec_id);
 
 #endif //CODEC_H_

@@ -99,6 +99,9 @@ enum {
     kKeyDtsPcmSampsInFrmMaxFs='dtsS',
 
 
+    // Keys to pass the unstable PTS flag to the decoder component.
+    kKeyUnstablePTS = 'upts',
+
 };
 
 

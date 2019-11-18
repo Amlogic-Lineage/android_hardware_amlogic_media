@@ -71,6 +71,9 @@
 #define AMSTREAM_IOC_SET	_IOW((AMSTREAM_IOC_MAGIC), 0xc2, struct am_ioctl_parm)
 #define AMSTREAM_IOC_GET_EX	_IOWR((AMSTREAM_IOC_MAGIC), 0xc3, struct am_ioctl_parm_ex)
 
+#define AMSTREAM_IOC_SET_CRC _IOW((AMSTREAM_IOC_MAGIC), 0xc9, struct usr_crc_info_t)
+#define AMSTREAM_IOC_GET_CRC_CMP_RESULT _IOWR((AMSTREAM_IOC_MAGIC), 0xca, int)
+
 // cmds
 #define AMSTREAM_SET_VB_SIZE		0x102
 #define AMSTREAM_SET_VFORMAT		0x105
@@ -853,5 +856,91 @@ int vcodec_close_cntl(vcodec_para_t *pcodec)
         }
     }
     return res;
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+* @brief  vcodec_set_frame_cmp_crc  write every frame crc for compare;
+*
+* @param[in]  pcodec Pointer of codec parameter structure, crc poll pointer and size
+*
+* @return     Success or fail error
+*/
+/* --------------------------------------------------------------------------*/
+int vcodec_set_frame_cmp_crc(vcodec_para_t *vcodec, const int *crc, int size)
+{
+    int ret = -1;
+    struct usr_crc_info_t crc_info;
+    int i;
+
+    if (vcodec == NULL)
+        return -1;
+
+    for (i = 0; i < size; i++) {
+        crc_info.id = 0;    /* only for one instance */
+        crc_info.pic_num = i;
+        crc_info.y_crc = crc[i * 2];
+        crc_info.uv_crc = crc[i * 2 + 1];
+        ret = vcodec_h_control(vcodec->handle,
+            AMSTREAM_IOC_SET_CRC, (unsigned long)&crc_info);
+        if (ret < 0) {
+            printf("set frame compare crc32 value failed, i = %d\n", i);
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+* @brief  vcodec_get_crc_check_result  get all crc cmp result
+*
+* @param[in]  pcodec  Pointer of codec parameter structure, Vdec ID
+*
+* @return     Success or fail error type, cmp result.
+*/
+/* --------------------------------------------------------------------------*/
+int vcodec_get_crc_check_result(vcodec_para_t *vcodec, int vdec_id)
+{
+    int ret, result = 0x00ff;
+
+    if (vcodec == NULL)
+        return -1;
+
+    result &= vdec_id; /*set the vdec id */
+    ret = vcodec_h_control(vcodec->handle,
+            AMSTREAM_IOC_GET_CRC_CMP_RESULT, (unsigned long)&result);
+    //printf("get result ret = %d, result = %d\n", ret, result);
+    if (ret < 0)
+        return ret;
+
+    return result;
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+* @brief  is_dec_cmp_ongoing  require decoding and compare crc num;
+*
+* @param[in]  pcodec  Pointer of codec parameter structure, Vdec ID.
+*
+* @return     Fail error type, or rest compare frame num;
+*/
+/* --------------------------------------------------------------------------*/
+int is_crc_cmp_ongoing(vcodec_para_t *vcodec, int vdec_id)
+{
+    int ret = 0;
+    int rest_num = 0xff00;
+
+    if (vcodec == NULL)
+        return -1;
+
+    rest_num |= vdec_id;
+    ret = vcodec_h_control(vcodec->handle,
+            AMSTREAM_IOC_GET_CRC_CMP_RESULT, (unsigned long)&rest_num);
+    if (ret < 0)
+        return ret;
+
+    return rest_num;
 }
 
