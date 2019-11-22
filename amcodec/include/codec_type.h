@@ -128,6 +128,7 @@ unsigned int dv_enable:
     int mixing_level;
     unsigned int drmmode;
     dec_mode_t dec_mode;
+    enum FRAME_BASE_VIDEO_PATH video_path;
 } codec_para_t;
 
 typedef struct {

@@ -614,7 +614,20 @@ static inline int codec_ts_init(codec_para_t *pcodec)
     }
 
     flags |= pcodec->noblock ? O_NONBLOCK : 0;
-    handle = codec_h_open(CODEC_TS_DEVICE, flags);
+    switch (pcodec->dec_mode) {
+        case STREAM_TYPE_SINGLE:
+            handle = codec_h_open(CODEC_TS_DEVICE, flags);
+            break;
+        case STREAM_TYPE_FRAME:   //will not happen
+            handle = codec_h_open(CODEC_TS_DEVICE, flags);
+            break;
+        case STREAM_TYPE_STREAM:
+            handle = codec_h_open(CODEC_TS_SCHED_DEVICE, flags);
+            break;
+        default:
+            handle = codec_h_open(CODEC_TS_DEVICE, flags);
+            break;
+    }
     if (handle < 0) {
         codec_r = system_error_to_codec_error(handle);
         print_error_msg(codec_r, errno, __FUNCTION__, __LINE__);
@@ -1025,6 +1038,25 @@ int codec_checkin_pts(codec_para_t *pcodec, unsigned long pts)
 {
     CODEC_PRINT("[%s:%d]pts=%lx(%ld)\n",__FUNCTION__,__LINE__,pts,pts/90000);
     return codec_h_ioctl(pcodec->handle, AMSTREAM_IOC_SET, AMSTREAM_SET_TSTAMP, pts);
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+* @brief  codec_checkin_pts_us64  Checkin pts to codec device
+*
+* @param[in]  pcodec      Pointer of codec parameter structure
+* @param[in]  pts_us64    64bit Pts to be checked in
+*
+* @return     0 for success, or fail type
+*/
+/* --------------------------------------------------------------------------*/
+int codec_checkin_pts_us64(codec_para_t *pcodec ,uint64_t pts_us64) {
+  int r;
+    r = codec_h_control(pcodec->handle, AMSTREAM_IOC_TSTAMP_uS64, (unsigned long)&pts_us64);
+    if (r < 0) {
+        return system_error_to_codec_error(r);
+    }
+    return 0;
 }
 
 /* --------------------------------------------------------------------------*/

@@ -64,6 +64,8 @@ int codec_set_eos(codec_para_t *pcodec, int is_eos);
 
 int codec_write(codec_para_t *pcodec, void *buffer, int len);
 int codec_checkin_pts(codec_para_t *pcodec, unsigned long pts);
+int codec_checkin_pts_us64(codec_para_t *pcodec, uint64_t pts_us64);
+
 int codec_get_vbuf_state(codec_para_t *, struct buf_status *);
 int codec_get_abuf_state(codec_para_t *, struct buf_status *);
 int codec_get_vdec_state(codec_para_t *, struct vdec_status *);
