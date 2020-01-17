@@ -351,6 +351,7 @@ struct userdata_poc_info_t {
 #define AMSTREAM_SET_EX_VIDEO_CROP 0x261
 /*  amstream set ptr cmd */
 #define AMSTREAM_SET_PTR_AUDIO_INFO 0x300
+#define AMSTREAM_SET_PTR_CONFIGS 0x301
 
 /*  amstream get cmd */
 #define AMSTREAM_GET_SUB_LENGTH 0x800
@@ -433,7 +434,7 @@ struct am_ioctl_parm_ptr {
         char data[8];
     };
     unsigned int cmd;
-    char reserved[4];
+    unsigned int len;
 };
 struct vframe_qos_s {
 	int num;
