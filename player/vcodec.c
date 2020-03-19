@@ -603,11 +603,14 @@ static inline int vcodec_video_es_init(vcodec_para_t *pcodec, int sched)
     }
 
     if (pcodec->video_type == VFORMAT_HEVC || pcodec->video_type == VFORMAT_VP9 ||
-        pcodec->video_type == VFORMAT_AVS2) {
+        pcodec->video_type == VFORMAT_AVS2 || pcodec->video_type == VFORMAT_AV1) {
         if (pcodec->dv_enable && pcodec->video_type == VFORMAT_HEVC)
             handle = vcodec_h_open(CODEC_VIDEO_DVHEVC_DEVICE, flags);
-        else
+        else {
+            if (pcodec->video_type == VFORMAT_AV1)
+                 amstream_hevc_dev = CODEC_VIDEO_HEVC_DEVICE;
             handle = vcodec_h_open(amstream_hevc_dev, flags);
+        }
     } else {
         if (pcodec->video_type == VFORMAT_H264 && pcodec->dv_enable)
             handle = vcodec_h_open(CODEC_VIDEO_DVAVC_DEVICE, flags);

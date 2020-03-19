@@ -28,6 +28,7 @@
 #define VFORMAT_JPEG_ENC	(13)
 #define VFORMAT_VP9		(14)
 #define VFORMAT_AVS2		(15)
+#define VFORMAT_AV1		(16)
 #define VFORMAT_MAX		(INT_MAX)
 
 // video type for sysinfo
