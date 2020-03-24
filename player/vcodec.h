@@ -10,6 +10,10 @@
 #ifndef CODEC_H_
 #define CODEC_H_
 
+
+#define SINGLE_MODE 0
+#define STREAM_MODE 1
+#define FRAME_MODE 2
 // video fromat
 #define VFORMAT_UNKNOWN		(-1)
 #define VFORMAT_MPEG12		(0)
@@ -147,6 +151,7 @@ unsigned int dv_enable:
     int associate_dec_supported;//support associate or not
     int mixing_level;
     unsigned int drmmode;
+    int mode;
 } vcodec_para_t;
 
 struct buf_status {
@@ -173,7 +178,7 @@ struct usr_crc_info_t {
 };
 
 // codec api
-int vcodec_init(vcodec_para_t *);
+int vcodec_init(vcodec_para_t *pcodec);
 int vcodec_close(vcodec_para_t *);
 int vcodec_reset(vcodec_para_t *);
 int vcodec_init_cntl(vcodec_para_t *);
