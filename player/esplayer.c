@@ -25,7 +25,7 @@
 #include <unistd.h>
 #include "vcodec.h"
 
-#define DEBUG_WITH_BLOCK
+//#define DEBUG_WITH_BLOCK
 
 #define READ_SIZE (64 * 1024)
 #define EXTERNAL_PTS    (1)
@@ -1149,6 +1149,10 @@ int main(int argc, char *argv[])
 
     if (argc < 7) {
         printf("Corret command: esplayer <filename> <width> <height> <fps> <mode> <format(1:mpeg4 2:h264 6:vc1)> [subformat for mpeg4/vc1]\n");
+        printf("<mode> :(No stream mode will be forced to single mode)\n");
+        printf("\t0   --single mode\n");
+        printf("\t1   --stream mode\n");
+        printf("\t2   --frame mode(av1)\n");
         return -1;
     }
     osd_blank("/sys/class/graphics/fb0/osd_display_debug", 1);
