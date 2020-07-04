@@ -546,7 +546,7 @@ int parser_frame(
             return -1;
         }
 
-        printf("\tobu %s len %d+%d\n", obu_type_name[obu_header.type], bytes_read, payload_size);
+        printf("\tobu %s len %zu+%zu\n", obu_type_name[obu_header.type], bytes_read, payload_size);
 
         obu_size = bytes_read + payload_size + 4;
 
@@ -631,7 +631,7 @@ int parser_frame(
             else
                 meta_type = 0;
             p = data + bytes_read;
-            printf("\tmeta type %s %d+%d\n", meta_type_name[type], bytes_read, payload_size - bytes_read);
+            printf("\tmeta type %s %zu+%zu\n", meta_type_name[type], bytes_read, payload_size - bytes_read);
 
             if (meta_type == OBU_METADATA_TYPE_ITUT_T35) {
 #if 0 /* for dumping original obu payload */

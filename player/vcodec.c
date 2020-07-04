@@ -369,7 +369,7 @@ static int vcodec_h_ioctl_get_ex(int h, int subcmd, unsigned long paramter)
 * @return     0 for success, non-0 for fail
 */
 /* --------------------------------------------------------------------------*/
-static int vcodec_h_ioctl(int h, int cmd, int subcmd, unsigned long paramter)
+static int vcodec_h_ioctl(int h, uint32_t cmd, int subcmd, unsigned long paramter)
 {
     int r;
 
